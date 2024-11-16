@@ -17,10 +17,8 @@ def calculate_focus(eye_focus, phone, hand_movements, talk, get_up):
     # Weights for each feature
     weights = {
         "eye_focus": 0.5,  # Positive contribution
-        "phone": -0.2,     # Negative contribution
         "hand_movements": -0.1,  # Negative contribution
-        "talk": -0.1,      # Negative contribution
-        "get_up": -0.1     # Negative contribution
+        
     }
 
     # Calculate focus based on the formula
