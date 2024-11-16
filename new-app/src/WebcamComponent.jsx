@@ -19,7 +19,7 @@ const WebcamComponent = () => {
                 audio={false}
                 ref={webcamRef}
                 screenshotFormat="image/jpeg"
-                width="100%"
+                width="50%"
                 videoConstraints={{
                     width: 1280,
                     height: 720,
