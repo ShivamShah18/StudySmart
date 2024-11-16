@@ -77,6 +77,23 @@ const StudyEfficiencyApp = () => {
               Our mission is to help you study smarter, not harder. By tracking your focus, identifying distractions, 
               and providing actionable feedback, we aim to make your study sessions more productive and efficient.
             </p>
+            <div className="card-container" style={{ display: "flex", justifyContent: "center", gap: "20px", marginTop: "30px" }}>
+              <div className="card" style={{ textAlign: "center", padding: "20px", borderRadius: "8px", backgroundColor: "#ECF0F1" }}>
+                <span style={{ fontSize: "4rem" }}>🧠</span>
+                <h3>Track Focus</h3>
+                <p>Monitor your attention and minimize distractions.</p>
+              </div>
+              <div className="card" style={{ textAlign: "center", padding: "20px", borderRadius: "8px", backgroundColor: "#ECF0F1" }}>
+                <span style={{ fontSize: "4rem" }}>💬</span>
+                <h3>Get Feedback</h3>
+                <p>Receive actionable advice to improve your study habits.</p>
+              </div>
+              <div className="card" style={{ textAlign: "center", padding: "20px", borderRadius: "8px", backgroundColor: "#ECF0F1" }}>
+                <span style={{ fontSize: "4rem" }}>🎯</span>
+                <h3>Set Goals</h3>
+                <p>Define your study goals and achieve them effectively.</p>
+              </div>
+            </div>
           </div>
         );
       case "Goals":
