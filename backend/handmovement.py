@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import math
 import copy
 
 class HandTracker:
@@ -11,27 +10,36 @@ class HandTracker:
         self.bg_model = cv2.createBackgroundSubtractorMOG2(0, 50)
         self.kernel = np.ones((3, 3), np.uint8)
 
-    def calculate_fingers(self, res, drawing):
-        # Convexity defect-based finger counting
-        hull = cv2.convexHull(res, returnPoints=False)
-        if len(hull) > 3:
-            defects = cv2.convexityDefects(res, hull)
-            if defects is not None:
-                cnt = 0
-                for i in range(defects.shape[0]):  # calculate the angle
-                    s, e, f, d = defects[i][0]
-                    start = tuple(res[s][0])
-                    end = tuple(res[e][0])
-                    far = tuple(res[f][0])
-                    a = math.sqrt((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2)
-                    b = math.sqrt((far[0] - start[0]) ** 2 + (far[1] - start[1]) ** 2)
-                    c = math.sqrt((end[0] - far[0]) ** 2 + (end[1] - far[1]) ** 2)
-                    angle = math.acos((b ** 2 + c ** 2 - a ** 2) / (2 * b * c))  # cosine theorem
-                    if angle <= math.pi / 2:  # angle less than 90 degrees
-                        cnt += 1
-                        cv2.circle(drawing, far, 8, [211, 84, 0], -1)
-                return True, cnt + 1
-        return False, 0
+        # Movement tracking variables
+        self.hand_present = False
+        self.hand_count = 0
+        self.last_position = None
+
+    def get_centroid(self, contour):
+        # Calculate the centroid of a contour
+        moments = cv2.moments(contour)
+        if moments["m00"] > 0:
+            cx = int(moments["m10"] / moments["m00"])
+            cy = int(moments["m01"] / moments["m00"])
+            return (cx, cy)
+        return None
+
+    def track_hand_movement(self, centroid):
+        # Determine if hand has moved across the frame
+        if centroid is not None:
+            cx, _ = centroid  # Only consider horizontal movement
+            if self.last_position is not None:
+                last_cx, _ = self.last_position
+                # Check if hand moved out of the frame (crossing certain thresholds)
+                if last_cx < 100 and cx > 400:  # Hand enters the frame from left
+                    self.hand_count += 1
+                    print("Hand entered the frame!")
+                elif last_cx > 400 and cx < 100:  # Hand exits the frame to the left
+                    self.hand_count += 1
+                    print("Hand exited the frame!")
+            self.last_position = centroid
+        else:
+            self.last_position = None
 
     def process_frame(self):
         while self.camera.isOpened():
@@ -56,27 +64,34 @@ class HandTracker:
             skin_mask = cv2.inRange(hsv, lower, upper)
             cv2.imshow('Threshold Hands', skin_mask)
 
-            # Contour and hull detection
+            # Contour detection
             contours, _ = cv2.findContours(
                 copy.deepcopy(skin_mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
             if contours:
                 max_area = max(contours, key=cv2.contourArea)
-                hull = cv2.convexHull(max_area)
-                drawing = np.zeros(img.shape, np.uint8)
-                cv2.drawContours(drawing, [max_area], 0, (0, 255, 0), 2)
-                cv2.drawContours(drawing, [hull], 0, (0, 0, 255), 3)
 
-                # Finger counting
-                is_finish_cal, cnt = self.calculate_fingers(max_area, drawing)
-                if is_finish_cal:
-                    print("Fingers:", cnt)
-                cv2.imshow('Output', drawing)
+                # Ensure contour is large enough
+                if cv2.contourArea(max_area) > 1000:  # Adjust threshold
+                    # Simplify the contour to remove noise
+                    epsilon = 0.02 * cv2.arcLength(max_area, True)
+                    approx = cv2.approxPolyDP(max_area, epsilon, True)
+
+                    # Track hand movement
+                    centroid = self.get_centroid(max_area)
+                    self.track_hand_movement(centroid)
+
+                    # Draw centroid for debugging
+                    if centroid:
+                        cv2.circle(frame, centroid, 5, (255, 0, 0), -1)
+
+                    cv2.imshow('Output', frame)
 
             # Exit on 'ESC'
             if cv2.waitKey(10) & 0xFF == 27:
                 break
 
+        print(f"Total hand movements (entering/exiting the frame): {self.hand_count}")
         self.camera.release()
         cv2.destroyAllWindows()
 
