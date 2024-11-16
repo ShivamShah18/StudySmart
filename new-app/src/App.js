@@ -3,6 +3,10 @@ import React, { useState, useEffect } from "react";
 const StudyEfficiencyApp = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
 
+  // Goals State
+  const [goals, setGoals] = useState([]);
+  const [goalInput, setGoalInput] = useState("");
+
   // Study Timer States
   const [studyActive, setStudyActive] = useState(false);
   const [studyTime, setStudyTime] = useState(0);
@@ -47,6 +51,20 @@ const StudyEfficiencyApp = () => {
     setBreakActive(false);
   };
 
+  // Add a new goal
+  const addGoal = () => {
+    if (goalInput.trim() !== "") {
+      setGoals([...goals, goalInput.trim()]);
+      setGoalInput(""); // Clear the input field
+    }
+  };
+
+  // Remove a goal
+  const removeGoal = (index) => {
+    const updatedGoals = goals.filter((_, i) => i !== index);
+    setGoals(updatedGoals);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "Dashboard":
@@ -59,23 +77,93 @@ const StudyEfficiencyApp = () => {
               Our mission is to help you study smarter, not harder. By tracking your focus, identifying distractions, 
               and providing actionable feedback, we aim to make your study sessions more productive and efficient.
             </p>
-            <div className="card-container">
-              <div className="card">
-                <span style={{ fontSize: "4rem" }}>🧠</span>
-                <h3>Track Focus</h3>
-                <p>Monitor your attention and minimize distractions.</p>
-              </div>
-              <div className="card">
-                <span style={{ fontSize: "4rem" }}>💬</span>
-                <h3>Get Feedback</h3>
-                <p>Receive actionable advice to improve your study habits.</p>
-              </div>
-              <div className="card">
-                <span style={{ fontSize: "4rem" }}>🎯</span>
-                <h3>Set Goals</h3>
-                <p>Define your study goals and achieve them effectively.</p>
-              </div>
+          </div>
+        );
+      case "Goals":
+        return (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <h2 style={{ color: "#3498DB" }}>Goals</h2>
+            <p style={{ fontSize: "1.1rem", lineHeight: "1.6", maxWidth: "600px", margin: "0 auto", marginBottom: "20px" }}>
+              The Goals tab helps you stay organized and motivated by allowing you to set, track, and manage your study goals.
+              Add goals that you'd like to achieve during your session and remove them as you complete them!
+            </p>
+            <div style={{ marginBottom: "20px" }}>
+              <input
+                type="text"
+                placeholder="Enter a new goal"
+                value={goalInput}
+                onChange={(e) => setGoalInput(e.target.value)}
+                style={{
+                  padding: "10px",
+                  width: "60%",
+                  borderRadius: "5px",
+                  border: "1px solid #ddd",
+                  marginRight: "10px",
+                }}
+              />
+              <button onClick={addGoal} style={{ backgroundColor: "#2ECC71", color: "#fff" }}>
+                Add Goal
+              </button>
             </div>
+            <ul style={{ listStyleType: "disc", paddingLeft: "40px", maxWidth: "600px", margin: "0 auto", textAlign: "left" }}>
+              {goals.map((goal, index) => (
+                <li
+                  key={index}
+                  style={{
+                    backgroundColor: "#ECF0F1",
+                    padding: "10px 15px",
+                    marginBottom: "10px",
+                    borderRadius: "5px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span>{goal}</span>
+                  <button
+                    onClick={() => removeGoal(index)}
+                    style={{
+                      backgroundColor: "#E74C3C",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "5px",
+                      padding: "5px 10px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      case "Efficiency Score":
+        return (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <h2 style={{ color: "#3498DB" }}>Efficiency Score</h2>
+            <p style={{ fontSize: "1.1rem", lineHeight: "1.6", maxWidth: "600px", margin: "0 auto", marginBottom: "20px" }}>
+              The Efficiency Score is calculated using a custom algorithm that evaluates your focus during study sessions.
+              It takes into account the number of blinks, eye movements, hand gestures, and phone usage detected during the session.
+              Based on this data, a focus percentage is generated to help you understand how well you're concentrating.
+            </p>
+            <p style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#2ECC71", marginTop: "20px" }}>
+              Focus Percentage: Placeholder %
+            </p>
+          </div>
+        );
+      case "Distraction Alerts":
+        return (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <h2 style={{ color: "#E74C3C" }}>Distraction Alerts</h2>
+            <p style={{ fontSize: "1.1rem", lineHeight: "1.6", maxWidth: "600px", margin: "0 auto", marginBottom: "20px" }}>
+              Distraction Alerts help you stay focused by monitoring and detecting when your concentration is interrupted.
+              Using advanced tracking algorithms, this feature identifies distractions such as phone usage, hand movements,
+              or excessive blinking, and provides real-time alerts to keep you on track.
+            </p>
+            <p style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#E74C3C", marginTop: "20px" }}>
+              Distractions Detected: Placeholder
+            </p>
           </div>
         );
       case "Session Timer":
@@ -124,15 +212,9 @@ const StudyEfficiencyApp = () => {
             </div>
           </div>
         );
-      case "Efficiency Score":
-        return <div><h2>Efficiency Score</h2><p>Focus Score: Placeholder</p></div>;
-      case "Distraction Alerts":
-        return <div><h2>Distraction Alerts</h2><p>Distractions Detected: Placeholder</p></div>;
-      case "Goals":
-        return <div><h2>Goals</h2><p>Set and track your goals here.</p></div>;
       case "Results":
         return (
-          <div>
+          <div style={{ textAlign: "center", padding: "20px" }}>
             <h2>Results</h2>
             <ul>
               <li>Focus Percentage: Placeholder</li>
@@ -143,9 +225,18 @@ const StudyEfficiencyApp = () => {
           </div>
         );
       case "Settings":
-        return <div><h2>Settings</h2><p>Customize your preferences here.</p></div>;
+        return (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <h2>Settings</h2>
+            <p>Customize your preferences here.</p>
+          </div>
+        );
       default:
-        return <div><p>Invalid Tab</p></div>;
+        return (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <p>Invalid Tab</p>
+          </div>
+        );
     }
   };
 
@@ -164,7 +255,7 @@ const StudyEfficiencyApp = () => {
 
       {/* Navigation Tabs */}
       <nav style={{ textAlign: "center", marginBottom: "20px" }}>
-        {["Dashboard", "Session Timer", "Break Timer", "Efficiency Score", "Distraction Alerts", "Goals", "Results", "Settings"].map((tab) => (
+        {["Dashboard", "Session Timer", "Break Timer", "Goals", "Efficiency Score", "Distraction Alerts", "Results", "Settings"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
