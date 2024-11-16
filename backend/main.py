@@ -12,9 +12,19 @@ app = FastAPI()
 blink_detector = BlinkDetector()
 phone_detector = PhoneDetector()
 frame_analyzer = FrameAnalyzer()
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow requests from any origin. Restrict this in production.
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 @app.post("/process-frame/")
 async def process_frame(file: UploadFile):
+    print("hi")
     # Read the uploaded frame
     contents = await file.read()
     nparr = np.frombuffer(contents, np.uint8)
