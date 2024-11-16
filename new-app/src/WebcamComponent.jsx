@@ -1,34 +1,36 @@
-import React from 'react';
+import React, { useState, useRef } from "react";
 import Webcam from "react-webcam";
+import { sendFrame } from "./api";
 
 const WebcamComponent = () => {
-    const webcamRef = React.useRef(null);
+  const webcamRef = useRef(null);
+  const [results, setResults] = useState({});
 
-    // Optional: Capture screenshot
-    const capture = React.useCallback(
-        () => {
-            const imageSrc = webcamRef.current.getScreenshot();
-            console.log(imageSrc);
-        },
-        [webcamRef]
-    );
+  const captureAndSend = async () => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    const blob = await fetch(imageSrc).then((res) => res.blob());
+    const formData = new FormData();
+    formData.append("file", blob, "frame.jpg");
 
-    return (
-        <>
-            <Webcam
-                audio={false}
-                ref={webcamRef}
-                screenshotFormat="image/jpeg"
-                width="50%"
-                videoConstraints={{
-                    width: 1280,
-                    height: 720,
-                    facingMode: "user"
-                }}
-            />
-            <button onClick={capture}>Capture photo</button>
-        </>
-    );
+    const response = await sendFrame(formData);
+    setResults(response);
+  };
+
+  return (
+    <div>
+      <Webcam
+        ref={webcamRef}
+        screenshotFormat="image/jpeg"
+        width={640}
+        height={480}
+      />
+      <button onClick={captureAndSend}>Analyze Frame</button>
+      <div>
+        <h2>Results:</h2>
+        <pre>{JSON.stringify(results, null, 2)}</pre>
+      </div>
+    </div>
+  );
 };
 
 export default WebcamComponent;
