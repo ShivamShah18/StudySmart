@@ -82,26 +82,9 @@ const StudyEfficiencyApp = () => {
   };
 
   return (
-<<<<<<< HEAD
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload Sreekar.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-=======
     <div style={{ fontFamily: "Arial, sans-serif", margin: "20px" }}>
       <header style={{ textAlign: "center", marginBottom: "20px" }}>
         <h1>Study Efficiency Tracker</h1>
->>>>>>> main
       </header>
 
       {/* Navigation Tabs */}
