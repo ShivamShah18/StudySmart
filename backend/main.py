@@ -1,18 +1,19 @@
-from fastapi import FastAPI, UploadFile, Form
+from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 import cv2
 import numpy as np
-#from models.blink_detector import BlinkDetector
-#from models.phone_detector import PhoneDetector
+from models.blink_detector import BlinkDetector
 from models.frame_analyzer import FrameAnalyzer
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 
-#blink_detector = BlinkDetector()
-#phone_detector = PhoneDetector()
+
+
+# Initialize detectors
+blink_detector = BlinkDetector()
 frame_analyzer = FrameAnalyzer()
-from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,21 +23,50 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+global blinks
+blinks = 0
+
+
+
+
+def webcam_stream():
+    camera = cv2.VideoCapture(0)  # Open the webcam
+    try:
+        while True:
+            success, frame = camera.read()
+            if not success:
+                break
+            # Encode the frame in JPEG format
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            # Yield the frame as part of the MJPEG stream
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    finally:
+        camera.release()
+
+@app.get("/webcam")
+async def webcam():
+    return StreamingResponse(webcam_stream(), media_type="multipart/x-mixed-replace; boundary=frame")
+
 @app.post("/process-frame/")
 async def process_frame(file: UploadFile):
-    print("hi")
+    global blinks
     # Read the uploaded frame
     contents = await file.read()
     nparr = np.frombuffer(contents, np.uint8)
     frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    # Analyze the frame
-   # blinks = blink_detector.detect(frame)
-   # phone_usage = phone_detector.detect(frame)
+    if frame is None:
+        return JSONResponse({"error": "Invalid image data"}, status_code=400)
+
+    # Analyze the frame for blinks and whether the person has left the frame
+    if(blink_detector.detect_blink(frame)):
+        blinks+=1
+
     left_frame = frame_analyzer.detect_exit(frame)
 
     return JSONResponse({
-       # "blinks": blinks,
-       # "phone_usage": phone_usage,
+        "blinks": blinks,
         "left_frame": left_frame
     })

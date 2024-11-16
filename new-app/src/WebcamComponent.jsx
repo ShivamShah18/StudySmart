@@ -1,34 +1,17 @@
-import React, { useState, useRef } from "react";
-import Webcam from "react-webcam";
-import { sendFrame } from "./api";
+import React from "react";
 
 const WebcamComponent = () => {
-  const webcamRef = useRef(null);
-  const [results, setResults] = useState({});
-
-  const captureAndSend = async () => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    const blob = await fetch(imageSrc).then((res) => res.blob());
-    const formData = new FormData();
-    formData.append("file", blob, "frame.jpg");
-
-    const response = await sendFrame(formData);
-    setResults(response);
-  };
+  const webcamUrl = "http://localhost:8000/webcam"; // Backend URL
 
   return (
     <div>
-      <Webcam
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-        width={640}
-        height={480}
+      <h1>Live Webcam Stream</h1>
+      {/* Display the MJPEG stream */}
+      <img
+        src={webcamUrl}
+        alt="Webcam Stream"
+        style={{ width: "100%", maxWidth: "640px", height: "auto" }}
       />
-      <button onClick={captureAndSend}>Analyze Frame</button>
-      <div>
-        <h2>Results:</h2>
-        <pre>{JSON.stringify(results, null, 2)}</pre>
-      </div>
     </div>
   );
 };
