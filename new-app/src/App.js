@@ -1,18 +1,20 @@
 import React, { useState } from "react";
-import React from 'react';
 import ReactDOM from 'react-dom';
 import WebcamComponent from './WebcamComponent'; // Adjust the path as necessary
-
 const StudyEfficiencyApp = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
 
   const renderContent = () => {
     switch (activeTab) {
       case "Webcam":
-        return ( <div>
-          <h1>Webcam Feed</h1>
-          <WebcamComponent />
-        </div>);
+        return (
+          <div>
+            <h2>Webcam Feed</h2>
+            <WebcamComponent />
+            <div id="root"></div>
+
+          </div>
+        );
       case "Dashboard":
         return (
           <div>
@@ -87,7 +89,7 @@ const StudyEfficiencyApp = () => {
 
       {/* Navigation Tabs */}
       <nav style={{ marginBottom: "20px", textAlign: "center" }}>
-        {["Dashboard", "Session Timer", "Efficiency Score", "Distraction Alerts", "Goals", "Break Timer", "Results", "Settings"].map((tab) => (
+        {["Webcam", "Dashboard", "Session Timer", "Efficiency Score", "Distraction Alerts", "Goals", "Break Timer", "Results", "Settings"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -113,5 +115,6 @@ const StudyEfficiencyApp = () => {
     </div>
   );
 };
+ReactDOM.render(<StudyEfficiencyApp />, document.getElementById('root'));
 
 export default StudyEfficiencyApp;
