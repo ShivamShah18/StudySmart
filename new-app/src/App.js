@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Logo from './Logo.png';
 
-const localLink = "http://localhost:5000"
 const App = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
@@ -20,7 +19,7 @@ const App = () => {
 
   useEffect(() => {
     // Fetch the graph from the Flask backend
-    fetch(localLink + '/api/focus-graph') // Ensure this is the correct backend URL
+    fetch('https://studynew.onrender.com:10000/api/focus-graph') // Ensure this is the correct backend URL
         .then(response => response.blob())
         .then(blob => {
             const url = URL.createObjectURL(blob); // Convert blob to URL
@@ -31,7 +30,7 @@ const App = () => {
 
 
   const handleStop = async () => {
-      const response = await fetch('http://localhost:5000/update_variable', {
+      const response = await fetch('https://studynew.onrender.com:10000/update_variable', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,7 +48,7 @@ const App = () => {
   useEffect(() => {
 
     const interval = setInterval(() => {
-      fetch('http://localhost:5000/detection_state')
+      fetch('https://studynew.onrender.com:10000/detection_state')
         .then(response => response.json())
         .then(data => setDetectionState(data))
         .catch(error => console.error('Error fetching detection state:', error));
@@ -186,7 +185,7 @@ const App = () => {
           <div className="camera">
             <h3>Camera</h3>
             <img
-              src="http://localhost:5000/video_feed"
+              src="https://studynew.onrender.com:10000/video_feed"
               width="300"
               height="200"
               alt="Live Video Feed"
