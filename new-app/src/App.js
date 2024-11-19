@@ -99,9 +99,6 @@ const App = () => {
           <div className="video-feed">
             <h2>Study Session Statistics</h2>
             <div>
-            {loading && <p>Generating graph...</p>}
-            {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-           
             <div>
             
             <div>
