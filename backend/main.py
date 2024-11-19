@@ -1,4 +1,4 @@
-from flask import Flask, Response, request, jsonify, send_file
+from flask import Flask, Response, jsonify, send_file
 import cv2
 import numpy as np
 import copy
@@ -6,11 +6,11 @@ import time
 from flask_cors import CORS
 import algo
 import math
+import os
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Initialize the webcam
-camera = cv2.VideoCapture(0)
+
 
 # Load Haar cascades for face and eye detection
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -25,6 +25,10 @@ detection_state = {
     "session_score": 0
 }
 
+if os.getenv('LOCAL_ENV'):
+    camera = cv2.VideoCapture(0)
+else:
+    camera = None
 
 # Blink tracking variables
 circle_detected = False
@@ -188,7 +192,7 @@ def get_focus_graph():
     return send_file(graph_stream, mimetype='image/png')
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=5000, debug=True)
+    app.run(host='localhost', port=10000, debug=True)
 
 # Release the camera resource when the app stops
 camera.release()
