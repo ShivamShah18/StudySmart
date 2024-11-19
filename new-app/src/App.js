@@ -1,9 +1,24 @@
-import WebcamComponent from "./WebcamComponent";
-import React, { useState } from "react";
+// src/App.js
+import React, { useEffect, useState } from 'react';
 
 const StudyEfficiencyApp = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [eventCounts, setEventCounts] = useState({
+    phone_pickup_count: 0,
+    left_frame_count: 0,
+    unfocused_count: 0
+});
 
+useEffect(() => {
+    const interval = setInterval(() => {
+        fetch('http://localhost:8000/event_counts')
+            .then(response => response.json())
+            .then(data => setEventCounts(data))
+            .catch(error => console.error('Error fetching event counts:', error));
+    }, 2000); // Update every 2 seconds
+
+    return () => clearInterval(interval);
+}, []);
   const renderContent = () => {
     switch (activeTab) {
       
@@ -38,11 +53,23 @@ const StudyEfficiencyApp = () => {
         );
         case "Camera":
           return (
-              <div>
-                <WebcamComponent/>
-              </div>
-            
-          );
+            <div style={{ textAlign: 'center' }}>
+                <h1>Study Tracker</h1>
+                <div>
+                    <img
+                        src="http://localhost:8000/video_feed"
+                        alt="Video feed"
+                        style={{ width: '640px', height: '480px' }}
+                    />
+                </div>
+                <div>
+                    <h2>Event Counts:</h2>
+                    <p>Phone Pickups: {eventCounts.phone_pickup_count}</p>
+                    <p>Left Frame: {eventCounts.left_frame_count}</p>
+                    <p>Unfocused: {eventCounts.unfocused_count}</p>
+                </div>
+            </div>
+        );
       case "Session Timer":
         return <div><h2>Session Timer</h2><p>Total Study Time: Placeholder</p></div>;
       case "Efficiency Score":

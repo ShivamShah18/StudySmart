@@ -1,7 +1,7 @@
 import React from "react";
 
 const WebcamComponent = () => {
-  const webcamUrl = "http://localhost:8000/webcam"; // Backend URL
+  const webcamUrl = "http://localhost:8000/video_feed"; // Backend URL
 
   return (
     <div>
