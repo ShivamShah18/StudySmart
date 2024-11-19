@@ -10,8 +10,6 @@ const App = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [graphUrl, setGraphUrl] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [detectionState, setDetectionState] = useState({
     face_detected: false,
     blink_count: 0,
@@ -40,6 +38,11 @@ const App = () => {
         },
         body: JSON.stringify({ isRunning: false }),
       });
+      if (response){
+        console.log("hi")
+      }
+  
+      
   
   };
 
