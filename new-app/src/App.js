@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Logo from './Logo.png';
 
-
+const localLink = "http://localhost:5000"
 const App = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
@@ -20,7 +20,7 @@ const App = () => {
 
   useEffect(() => {
     // Fetch the graph from the Flask backend
-    fetch('http://localhost:5000/api/focus-graph') // Ensure this is the correct backend URL
+    fetch(localLink + '/api/focus-graph') // Ensure this is the correct backend URL
         .then(response => response.blob())
         .then(blob => {
             const url = URL.createObjectURL(blob); // Convert blob to URL
@@ -81,11 +81,6 @@ const App = () => {
     setTasks(tasks.map((task, i) =>
       i === index ? { ...task, completed: !task.completed } : task
     ));
-  };
-
-  const handleReset = () => {
-    setTimer(0);
-    setIsRunning(false);
   };
 
   const handleDeleteTask = (index) => {
