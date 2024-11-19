@@ -192,7 +192,7 @@ def get_focus_graph():
     return send_file(graph_stream, mimetype='image/png')
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=10000, debug=True)
+    app.run()
 
 # Release the camera resource when the app stops
 camera.release()
