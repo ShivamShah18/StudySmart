@@ -191,9 +191,6 @@ def get_focus_graph():
     # Send the graph as a PNG image
     return send_file(graph_stream, mimetype='image/png')
 
-if __name__ == '__main__':
-    app.run()
-
 # Release the camera resource when the app stops
 camera.release()
 cv2.destroyAllWindows()
