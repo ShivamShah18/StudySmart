@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import Logo from './Logo.png';
+
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
@@ -7,24 +9,51 @@ const App = () => {
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [graphUrl, setGraphUrl] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [detectionState, setDetectionState] = useState({
     face_detected: false,
     blink_count: 0,
     hand_absent_count: 0,
+    session_score: 0
   });
 
 
   useEffect(() => {
-    
-      const interval = setInterval(() => {
-        fetch('http://localhost:5000/detection_state')
-          .then(response => response.json())
-          .then(data => setDetectionState(data))
-          .catch(error => console.error('Error fetching detection state:', error));
-      }, 1000); // Update every second
+    // Fetch the graph from the Flask backend
+    fetch('http://localhost:5000/api/focus-graph') // Ensure this is the correct backend URL
+        .then(response => response.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob); // Convert blob to URL
+            setGraphUrl(url); // Save the blob URL
+        })
+        .catch(error => console.error('Error fetching graph:', error));
+}, []);
 
-      return () => clearInterval(interval);
-    
+
+  const handleStop = async () => {
+      const response = await fetch('http://localhost:5000/update_variable', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isRunning: false }),
+      });
+  
+  };
+
+  useEffect(() => {
+
+    const interval = setInterval(() => {
+      fetch('http://localhost:5000/detection_state')
+        .then(response => response.json())
+        .then(data => setDetectionState(data))
+        .catch(error => console.error('Error fetching detection state:', error));
+    }, 1000); // Update every second
+
+    return () => clearInterval(interval);
+
   }, [activeTab]);
 
   // Timer functionality
@@ -66,7 +95,22 @@ const App = () => {
         <div className="dashboard">
           <div className="video-feed">
             <h2>Study Session Statistics</h2>
+            <div>
+            {loading && <p>Generating graph...</p>}
+            {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+           
+            <div>
             
+            <div>
+            <h1>Focus Graph</h1>
+            {graphUrl ? (
+                <img width = "400" height = "300" src={graphUrl} alt="Focus Graph" />
+            ) : (
+                <p>Loading graph...</p>
+            )}
+        </div>
+        </div>
+        </div>
             <p>Face Detected: {detectionState.face_detected ? "Yes" : "No"}</p>
             <p>Blinks Detected: {detectionState.blink_count}</p>
             <p>Hand Left Frame Count: {detectionState.hand_absent_count}</p>
@@ -94,18 +138,23 @@ const App = () => {
               ))}
             </ul>
 
+
             <div className="timer">
               <h3>Focus Timer</h3>
-              <p>{`${Math.floor(timer / 60)}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</p>
+              <p>  {`${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, '0')}`}
+              </p>
               <button onClick={() => setIsRunning(true)}>Start</button>
               <button onClick={() => setIsRunning(false)}>Stop</button>
-              <button onClick={handleReset}>Reset</button>
+              <button onClick={() => {
+                setIsRunning(false);
+                handleStop();
+              }}>Reset</button>
             </div>
             <div className="statistics">
               <h3>Session Statistics</h3>
               {isRunning
                 ? <p>Tracking focus...</p>
-                : <p>Your focus level: {Math.max(0, 100 - timer)}%</p>}
+                : <p>Your focus level: {detectionState.session_score}%</p>}
             </div>
           </div>
         </div>
@@ -129,7 +178,7 @@ const App = () => {
     <div className="App">
       <header className="App-header">
         <div className="logo-and-title">
-          <img src="logo.png" alt="Logo" className="logo" />
+          <img src={Logo} alt="Logo" className="logo" />
           <h1>Study Smart</h1>
         </div>
       </header>
@@ -159,3 +208,4 @@ const App = () => {
 };
 
 export default App;
+

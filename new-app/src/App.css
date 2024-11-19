@@ -11,20 +11,30 @@
   color: white;
   padding: 20px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: center; /* Center the logo and title */
   border-bottom: 3px solid #000000;
 }
 
 .App-header .logo-and-title {
   display: flex;
+  flex-direction: column; /* Stack the logo and title */
   align-items: center;
+  text-align: center;
 }
 
 .App-header .logo {
-  width: 40px;
-  height: 40px;
-  margin-right: 10px;
+  width: 80px; /* Increase the size */
+  height: 80px;
+  border-radius: 50%; /* Make the logo circular */
+  margin-bottom: 10px;
+  border: 3px solid white; /* Optional: add a border for better visibility */
+  object-fit: cover; /* Ensure the logo fits well within the circle */
+}
+
+.App-header h1 {
+  font-size: 1.8rem; /* Adjust font size */
+  margin: 0;
 }
 
 .App-nav {

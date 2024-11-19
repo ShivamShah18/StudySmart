@@ -1,10 +1,11 @@
-from flask import Flask, Response, jsonify
+from flask import Flask, Response, request, jsonify, send_file
 import cv2
 import numpy as np
 import copy
 import time
 from flask_cors import CORS
-
+import algo
+import math
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -20,7 +21,10 @@ detection_state = {
     "face_detected": False,
     "blink_count": 0,
     "hand_absent_count": 0,
+    "session_duration": 0,
+    "session_score": 0
 }
+
 
 # Blink tracking variables
 circle_detected = False
@@ -124,6 +128,7 @@ def analyze_frame(frame):
     # Hand absence detection
     hand_tracker.track_hand_movement(frame)
     detection_state["hand_absent_count"] = hand_tracker.hand_count
+    detection_state["session_score"] = math.floor((algo.calculate_focus_score(detection_state["blink_count"], detection_state["hand_absent_count"])) * 100)
 
 
 def gen_frames():
@@ -153,9 +158,43 @@ def get_detection_state():
     return jsonify(detection_state)
 
 
+
+@app.route('/update_variable', methods=['POST'])
+def update_variable():
+    global detection_state
+    detection_state["face_detected"] = False
+    detection_state["blink_count"] = 0
+    detection_state["hand_absent_count"] = 0
+    detection_state["session_duration"] = 0
+    detection_state["session_score"] = 0
+    return jsonify({'message': 'Variable updated successfully'})
+
+
+
+
+
+
+@app.route('/api/focus-graph', methods=['GET'])
+def get_focus_graph():
+    # Example data
+    session_duration = 100
+    blink_count = 5
+    hand_absent_count = 5
+
+    # Generate the graph
+    graph_stream = algo.plot_focus_graph(session_duration, blink_count, hand_absent_count)
+
+    # Send the graph as a PNG image
+    return send_file(graph_stream, mimetype='image/png')
+
 if __name__ == '__main__':
     app.run(host='localhost', port=5000, debug=True)
 
 # Release the camera resource when the app stops
 camera.release()
 cv2.destroyAllWindows()
+
+@app.route('/test-print', methods=['GET'])
+def test_print():
+    print("The /test-print endpoint was called!", flush=True)
+    return "Print statement executed!", 200
