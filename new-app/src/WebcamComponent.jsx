@@ -1,34 +1,19 @@
-import React from 'react';
-import Webcam from "react-webcam";
+import React from "react";
 
 const WebcamComponent = () => {
-    const webcamRef = React.useRef(null);
+  const webcamUrl = "http://localhost:8000/webcam"; // Backend URL
 
-    // Optional: Capture screenshot
-    const capture = React.useCallback(
-        () => {
-            const imageSrc = webcamRef.current.getScreenshot();
-            console.log(imageSrc);
-        },
-        [webcamRef]
-    );
-
-    return (
-        <>
-            <Webcam
-                audio={false}
-                ref={webcamRef}
-                screenshotFormat="image/jpeg"
-                width="50%"
-                videoConstraints={{
-                    width: 1280,
-                    height: 720,
-                    facingMode: "user"
-                }}
-            />
-            <button onClick={capture}>Capture photo</button>
-        </>
-    );
+  return (
+    <div>
+      <h1>Live Webcam Stream</h1>
+      {/* Display the MJPEG stream */}
+      <img
+        src={webcamUrl}
+        alt="Webcam Stream"
+        style={{ width: "100%", maxWidth: "640px", height: "auto" }}
+      />
+    </div>
+  );
 };
 
 export default WebcamComponent;
