@@ -1,5 +1,8 @@
 from flask import Flask, Response, jsonify
 import cv2
+import numpy as np
+import copy
+import time
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -16,14 +19,70 @@ eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_rightey
 detection_state = {
     "face_detected": False,
     "blink_count": 0,
+    "hand_absent_count": 0,
 }
 
-# Track the state for blink detection
-circle_detected = False  # Tracks if a circle (pupil) was detected in the previous frame
+# Blink tracking variables
+circle_detected = False
+
+# Hand tracking class
+class HandTracker:
+    def __init__(self):
+        self.bg_model = cv2.createBackgroundSubtractorMOG2(0, 50)
+        self.kernel = np.ones((3, 3), np.uint8)
+        self.hand_absent_detected = False
+        self.last_time_checked = time.time()
+        self.hand_count = 0
+
+    def get_centroid(self, contour):
+        moments = cv2.moments(contour)
+        if moments["m00"] > 0:
+            cx = int(moments["m10"] / moments["m00"])
+            cy = int(moments["m01"] / moments["m00"])
+            return (cx, cy)
+        return None
+
+    def track_hand_movement(self, frame):
+        """Analyze the frame for hand presence or absence."""
+        fgmask = self.bg_model.apply(frame)
+        fgmask = cv2.erode(fgmask, self.kernel, iterations=1)
+        img = cv2.bitwise_and(frame, frame, mask=fgmask)
+
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        lower = np.array([0, 48, 80], dtype="uint8")
+        upper = np.array([20, 255, 255], dtype="uint8")
+        skin_mask = cv2.inRange(hsv, lower, upper)
+
+        contours, _ = cv2.findContours(copy.deepcopy(skin_mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        if contours:
+            max_area = max(contours, key=cv2.contourArea)
+            if cv2.contourArea(max_area) > 1000:  # Adjust threshold for hand size
+                centroid = self.get_centroid(max_area)
+                self.update_hand_absence(centroid)
+                return
+
+        # If no contours are found
+        self.update_hand_absence(None)
+
+    def update_hand_absence(self, centroid):
+        """Update hand absence count based on the centroid."""
+        current_time = time.time()
+        if current_time - self.last_time_checked >= 1:  # Check every second
+            self.last_time_checked = current_time
+            if centroid is not None:
+                if self.hand_absent_detected:
+                    self.hand_absent_detected = False
+            elif not self.hand_absent_detected:
+                self.hand_count += 1
+                self.hand_absent_detected = True
+
+
+# Initialize the HandTracker
+hand_tracker = HandTracker()
 
 
 def analyze_frame(frame):
-    """Analyze the frame for multiple detections and update state."""
+    """Analyze the frame for face, blink, and hand detections."""
     global circle_detected
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -51,6 +110,9 @@ def analyze_frame(frame):
         )
         if circles is not None:
             circles_detected_in_frame = True
+            for i in circles[0, :]:
+                cv2.circle(roi_color, (int(i[0]), int(i[1])), int(i[2]), (255, 255, 255), 2)
+                cv2.circle(roi_color, (int(i[0]), int(i[1])), 2, (255, 255, 255), 3)
 
     if circles_detected_in_frame:
         if not circle_detected:
@@ -58,6 +120,10 @@ def analyze_frame(frame):
         circle_detected = True
     else:
         circle_detected = False
+
+    # Hand absence detection
+    hand_tracker.track_hand_movement(frame)
+    detection_state["hand_absent_count"] = hand_tracker.hand_count
 
 
 def gen_frames():
@@ -67,10 +133,8 @@ def gen_frames():
         if not success:
             break
         else:
-            # Analyze the frame for all detections
             analyze_frame(frame)
 
-            # Encode the frame in JPEG format
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
