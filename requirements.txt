@@ -1,4 +1,6 @@
-dlib
+cmake
+wheel
+dlib-bin
 Flask
 Flask_Cors
 matplotlib
