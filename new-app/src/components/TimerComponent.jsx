@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE_URL = 'http://127.0.0.1:5000';
+const API_BASE_URL = 'https://studynew-production.up.railway.app';
 
 const TimerComponent = () => {
   const [elapsedTime, setElapsedTime] = useState(0);

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import TimerComponent from './TimerComponent';
 import TaskList from './TaskList';
 import VideoCapture from "./VideoCapture";
-
-const API_BASE_URL = 'http://127.0.0.1:5000';
+  
+const API_BASE_URL = 'https://studynew-production.up.railway.app';
 
 const Dashboard = () => {
 
