@@ -1,6 +1,8 @@
+import io
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 
 # Directory to save the graph image
 GRAPH_OUTPUT_PATH = "static"
@@ -40,16 +42,55 @@ def generate_focus_data(session_duration, blink_count, hand_absent_count):
     return intervals, focus_scores
 
 
-import io
-from flask import Flask, jsonify, send_file
 
-def plot_focus_graph(session_duration, blink_count, hand_absent_count):
+
+def generate_focus_data(session_duration, blink_count, hand_absent_count):
     """
-    Generate the focus graph and return it as a byte stream.
+    Generate intervals and focus scores based on session data.
+
+    Args:
+        session_duration (int): Total duration of the session in seconds.
+        blink_count (list): List of blink counts for each 5-second interval.
+        hand_absent_count (list): List of counts of "hands absent" for each 5-second interval.
+
+    Returns:
+        intervals (list): Time intervals in seconds.
+        focus_scores (list): Calculated focus scores for each interval.
     """
-    intervals, focus_scores = generate_focus_data(session_duration, blink_count, hand_absent_count)
+    # Calculate the number of intervals (5 seconds each)
+    num_intervals = session_duration // 5
+
+    # Generate intervals (start time of each 5-second interval)
+    intervals = [i * 5 for i in range(num_intervals)]
+
+    # Ensure blink_count and hand_absent_count are the same length as intervals
+    if len(blink_count) != num_intervals or len(hand_absent_count) != num_intervals:
+        raise ValueError("blink_count and hand_absent_count must match the number of intervals.")
+
+    # Calculate focus scores (example formula)
+    focus_scores = [
+        max(0, 100 - (blinks * 2 + hands_absent * 5))  # Adjust weights as needed
+        for blinks, hands_absent in zip(blink_count, hand_absent_count)
+    ]
+
+    return intervals, focus_scores
+
+def plot_focus_graph(sessionScoreList):
+    """
+    Generate the focus graph from a session score list and return it as a byte stream.
+
+    Args:
+        sessionScoreList (list): List of focus scores for each 5-second interval.
+
+    Returns:
+        BytesIO: A byte stream of the generated plot.
+    """
+    # Generate the x-axis (time in seconds) based on the length of sessionScoreList
+    intervals = [i * 5 for i in range(len(sessionScoreList))]
+    
+    # Plot the focus scores over time
     plt.figure(figsize=(10, 6))
-    plt.plot(intervals, focus_scores, label="Focus Score", color="blue")
+    plt.plot(intervals, sessionScoreList, label="Focus Score", color="blue")
     plt.xlabel("Time (seconds)")
     plt.ylabel("Focus Score")
     plt.title("Focus Score Over Time")

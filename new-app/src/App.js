@@ -2,13 +2,85 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Logo from './Logo.png';
 
+const link2 = 'https://studynew.onrender.com:10000'
+const link = 'http://localhost:5000' 
 const App = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
-  const [timer, setTimer] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0); // Store elapsed time
+  const [running, setRunning] = useState(false); // Track if the timer is running
+  const [graphUrl, setGraphUrl] = useState(null); // State to store the graph URL
+
+  const fetchFocusGraph = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/focus-graph');
+      if (!response.ok) {
+        throw new Error('Failed to fetch the graph');
+      }
+
+      const blob = await response.blob(); // Get the image as a blob
+      const url = URL.createObjectURL(blob); // Convert the blob to a URL
+      setGraphUrl(url); // Update the graph URL
+    } catch (error) {
+      console.error('Error fetching graph:', error);
+    }
+  };
+
+  // Fetch elapsed time periodically when the timer is running
+  useEffect(() => {
+    let timerInterval;
+    if (running) {
+      timerInterval = setInterval(() => {
+        fetchTime();
+      }, 1000);
+    }
+    return () => clearInterval(timerInterval); // Cleanup interval on unmount
+  }, [running]);
+
+  // Fetch the elapsed time from the backend
+  const fetchTime = async () => {
+    try {
+      const response = await fetch(link + '/get_time'); // Flask endpoint
+      if (response.ok) {
+        const data = await response.json();
+        setElapsedTime(data.elapsed_time); // Update elapsed time
+      } else {
+        console.error('Failed to fetch time');
+      }
+    } catch (error) {
+      console.error('Error fetching time:', error);
+    }
+  };
+
+  // Start the timer by calling Flask
+  const startTimer = async () => {
+    try {
+      const response = await fetch(link + '/start_timer', { method: 'POST' }); // Flask endpoint
+      if (response.ok) {
+        setRunning(true); // Set timer as running
+      } else {
+        console.error('Failed to start timer');
+      }
+    } catch (error) {
+      console.error('Error starting timer:', error);
+    }
+  };
+
+  // Stop the timer by calling Flask
+  const stopTimer = async () => {
+    try {
+      const response = await fetch(link + '/stop_timer', { method: 'POST' }); // Flask endpoint
+      if (response.ok) {
+        setRunning(false); // Set timer as stopped
+        fetchTime(); // Update elapsed time after stopping
+      } else {
+        console.error('Failed to stop timer');
+      }
+    } catch (error) {
+      console.error('Error stopping timer:', error);
+    }
+  };  const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("Dashboard");
-  const [graphUrl, setGraphUrl] = useState(null);
   const [detectionState, setDetectionState] = useState({
     face_detected: false,
     blink_count: 0,
@@ -16,39 +88,22 @@ const App = () => {
     session_score: 0
   });
 
-
-  useEffect(() => {
-    // Fetch the graph from the Flask backend
-    fetch('https://studynew.onrender.com:10000/api/focus-graph') // Ensure this is the correct backend URL
-        .then(response => response.blob())
-        .then(blob => {
-            const url = URL.createObjectURL(blob); // Convert blob to URL
-            setGraphUrl(url); // Save the blob URL
-        })
-        .catch(error => console.error('Error fetching graph:', error));
-}, []);
-
-
+  
   const handleStop = async () => {
-      const response = await fetch('https://studynew.onrender.com:10000/update_variable', {
+      const response = await fetch(link + '/update_variable', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ isRunning: false }),
       });
-      if (response){
-        console.log("hi")
-      }
-  
-      
-  
+    
   };
 
   useEffect(() => {
 
     const interval = setInterval(() => {
-      fetch('https://studynew.onrender.com:10000/detection_state')
+      fetch(link + '/detection_state')
         .then(response => response.json())
         .then(data => setDetectionState(data))
         .catch(error => console.error('Error fetching detection state:', error));
@@ -58,16 +113,7 @@ const App = () => {
 
   }, [activeTab]);
 
-  // Timer functionality
-  React.useEffect(() => {
-    let interval;
-    if (isRunning) {
-      interval = setInterval(() => setTimer((prev) => prev + 1), 1000);
-    } else {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [isRunning]);
+
 
   const handleAddTask = () => {
     if (newTask.trim()) {
@@ -96,12 +142,11 @@ const App = () => {
             <div>
             
             <div>
-            <h1>Focus Graph</h1>
-            {graphUrl ? (
-                <img width = "400" height = "300" src={graphUrl} alt="Focus Graph" />
-            ) : (
-                <p>Loading graph...</p>
-            )}
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+      <h1>Focus Graph</h1>
+      <button onClick={fetchFocusGraph}>Get Focus Graph</button>
+      {graphUrl && <img src={graphUrl} alt="Focus Graph" style={{ marginTop: '20px', width: '80%' }} />}
+    </div>
         </div>
         </div>
         </div>
@@ -133,22 +178,21 @@ const App = () => {
             </ul>
 
 
-            <div className="timer">
-              <h3>Focus Timer</h3>
-              <p>  {`${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, '0')}`}
-              </p>
-              <button onClick={() => setIsRunning(true)}>Start</button>
-              <button onClick={() => setIsRunning(false)}>Stop</button>
-              <button onClick={() => {
-                setIsRunning(false);
-                handleStop();
-              }}>Reset</button>
-            </div>
+           
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+      <h1>Flask Timer</h1>
+      <p>Elapsed Time: {elapsedTime.toFixed(2)} seconds</p>
+      <button onClick={startTimer} disabled={running}>
+        Start
+      </button>
+      <button onClick={stopTimer} disabled={!running}>
+        Stop
+      </button>
+    </div>
             <div className="statistics">
               <h3>Session Statistics</h3>
-              {isRunning
-                ? <p>Tracking focus...</p>
-                : <p>Your focus level: {detectionState.session_score}%</p>}
+              
+              <p>Your focus level: {detectionState.session_score}%</p>
             </div>
           </div>
         </div>
@@ -185,7 +229,7 @@ const App = () => {
           <div className="camera">
             <h3>Camera</h3>
             <img
-              src="https://studynew.onrender.com:10000/video_feed"
+              src= {link + "/video_feed"}
               width="300"
               height="200"
               alt="Live Video Feed"

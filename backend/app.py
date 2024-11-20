@@ -20,14 +20,45 @@ detection_state = {
     "blink_count": 0,
     "hand_absent_count": 0,
     "session_duration": 0,
-    "session_score": 0
+    "session_score": 0,
+    "sessionScoreList": [100]
+
 }
 
-if os.getenv('LOCAL_ENV'):
-    camera = cv2.VideoCapture(0)
-else:
-    camera = None
+camera = cv2.VideoCapture(0)
 
+# Timer state
+timer_data = {
+    "start_time": None,
+    "elapsed_time": 0,
+    "running": False
+}
+
+def current_time():
+    return time.time()
+
+@app.route('/start_timer', methods=['POST'])
+def start_timer():
+    if not timer_data["running"]:
+        timer_data["start_time"] = int(current_time())
+        timer_data["running"] = True
+    return jsonify({"message": "Timer started", "elapsed_time": timer_data["elapsed_time"]})
+
+@app.route('/stop_timer', methods=['POST'])
+def stop_timer():
+    if timer_data["running"]:
+        timer_data["elapsed_time"] += int(current_time()) - timer_data["start_time"]
+        timer_data["start_time"] = None
+        timer_data["running"] = False
+    return jsonify({"message": "Timer stopped", "elapsed_time": timer_data["elapsed_time"]})
+
+@app.route('/get_time', methods=['GET'])
+def get_time():
+    if timer_data["running"]:
+        current_elapsed = timer_data["elapsed_time"] + (int(current_time()) - timer_data["start_time"])
+    else:
+        current_elapsed = timer_data["elapsed_time"]
+    return jsonify({"elapsed_time": current_elapsed})
 # Blink tracking variables
 circle_detected = False
 
@@ -127,6 +158,8 @@ def analyze_frame(frame):
     hand_tracker.track_hand_movement(frame)
     detection_state["hand_absent_count"] = hand_tracker.hand_count
     detection_state["session_score"] = math.floor((algo.calculate_focus_score(detection_state["blink_count"], detection_state["hand_absent_count"])) * 100)
+    if timer_data["elapsed_time"]%5==0:
+        detection_state["sessionScoreList"].append(detection_state["session_score"])
 
 
 def gen_frames():
@@ -169,16 +202,13 @@ def update_variable():
 
 @app.route('/api/focus-graph', methods=['GET'])
 def get_focus_graph():
+    global detection_state
     # Example data
-    session_duration = 100
-    blink_count = 5
-    hand_absent_count = 5
-
-    # Generate the graph
-    graph_stream = algo.plot_focus_graph(session_duration, blink_count, hand_absent_count)
+    
+    graph_stream = algo.plot_focus_graph(detection_state["sessionScoreList"])
 
     # Send the graph as a PNG image
     return send_file(graph_stream, mimetype='image/png')
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host = "localhost", port = 5000)
