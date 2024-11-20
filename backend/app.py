@@ -25,8 +25,6 @@ detection_state = {
 
 }
 
-camera = cv2.VideoCapture(0)
-
 # Timer state
 timer_data = {
     "start_time": None,
@@ -64,43 +62,43 @@ circle_detected = False
 
 # Hand tracking class
 class HandTracker:
-    if camera:
-        def __init__(self):
-            self.bg_model = cv2.createBackgroundSubtractorMOG2(0, 50)
-            self.kernel = np.ones((3, 3), np.uint8)
-            self.hand_absent_detected = False
-            self.last_time_checked = time.time()
-            self.hand_count = 0
+   
+    def __init__(self):
+        self.bg_model = cv2.createBackgroundSubtractorMOG2(0, 50)
+        self.kernel = np.ones((3, 3), np.uint8)
+        self.hand_absent_detected = False
+        self.last_time_checked = time.time()
+        self.hand_count = 0
 
-        def get_centroid(self, contour):
-            moments = cv2.moments(contour)
-            if moments["m00"] > 0:
-                cx = int(moments["m10"] / moments["m00"])
-                cy = int(moments["m01"] / moments["m00"])
-                return (cx, cy)
-            return None
+    def get_centroid(self, contour):
+        moments = cv2.moments(contour)
+        if moments["m00"] > 0:
+            cx = int(moments["m10"] / moments["m00"])
+            cy = int(moments["m01"] / moments["m00"])
+            return (cx, cy)
+        return None
 
-        def track_hand_movement(self, frame):
-            """Analyze the frame for hand presence or absence."""
-            fgmask = self.bg_model.apply(frame)
-            fgmask = cv2.erode(fgmask, self.kernel, iterations=1)
-            img = cv2.bitwise_and(frame, frame, mask=fgmask)
+    def track_hand_movement(self, frame):
+        """Analyze the frame for hand presence or absence."""
+        fgmask = self.bg_model.apply(frame)
+        fgmask = cv2.erode(fgmask, self.kernel, iterations=1)
+        img = cv2.bitwise_and(frame, frame, mask=fgmask)
 
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            lower = np.array([0, 48, 80], dtype="uint8")
-            upper = np.array([20, 255, 255], dtype="uint8")
-            skin_mask = cv2.inRange(hsv, lower, upper)
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        lower = np.array([0, 48, 80], dtype="uint8")
+        upper = np.array([20, 255, 255], dtype="uint8")
+        skin_mask = cv2.inRange(hsv, lower, upper)
 
-            contours, _ = cv2.findContours(copy.deepcopy(skin_mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            if contours:
-                max_area = max(contours, key=cv2.contourArea)
-                if cv2.contourArea(max_area) > 1000:  # Adjust threshold for hand size
-                    centroid = self.get_centroid(max_area)
-                    self.update_hand_absence(centroid)
-                    return
+        contours, _ = cv2.findContours(copy.deepcopy(skin_mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        if contours:
+            max_area = max(contours, key=cv2.contourArea)
+            if cv2.contourArea(max_area) > 1000:  # Adjust threshold for hand size
+                centroid = self.get_centroid(max_area)
+                self.update_hand_absence(centroid)
+                return
 
-            # If no contours are found
-            self.update_hand_absence(None)
+        # If no contours are found
+        self.update_hand_absence(None)
 
     def update_hand_absence(self, centroid):
         """Update hand absence count based on the centroid."""
@@ -113,8 +111,7 @@ class HandTracker:
             elif not self.hand_absent_detected:
                 self.hand_count += 1
                 self.hand_absent_detected = True
-hand_tracker = HandTracker()
-def analyze_frame(frame):
+def analyze_frame(frame, hand_tracker):
     """Analyze the frame for face, blink, and hand detections."""
     global circle_detected
 
@@ -143,9 +140,6 @@ def analyze_frame(frame):
         )
         if circles is not None:
             circles_detected_in_frame = True
-            for i in circles[0, :]:
-                cv2.circle(roi_color, (int(i[0]), int(i[1])), int(i[2]), (255, 255, 255), 2)
-                cv2.circle(roi_color, (int(i[0]), int(i[1])), 2, (255, 255, 255), 3)
 
     if circles_detected_in_frame:
         if not circle_detected:
@@ -164,18 +158,21 @@ def analyze_frame(frame):
 
 def gen_frames():
     """Video streaming generator function."""
-    while True:
-        success, frame = camera.read()
-        if not success:
-            break
-        else:
-            analyze_frame(frame)
+    camera = cv2.VideoCapture(0)
+    hand_tracker = HandTracker()
 
+    try:
+        while True:
+            success, frame = camera.read()
+            if not success:
+                break
+            analyze_frame(frame, hand_tracker)
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
+    finally:
+        camera.release()
 
 @app.route('/video_feed')
 def video_feed():
