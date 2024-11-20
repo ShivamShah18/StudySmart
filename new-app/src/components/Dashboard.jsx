@@ -1,10 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import TimerComponent from './TimerComponent';
 import TaskList from './TaskList';
+import VideoCapture from "./VideoCapture";
 
-const API_BASE_URL = 'https://studynew-production.up.railway.app/';
+const API_BASE_URL = 'http://127.0.0.1:5000';
 
 const Dashboard = () => {
+
+
+  const sendFrameToBackend = async (frameBlob) => {
+    try {
+      const formData = new FormData();
+      formData.append("frame", frameBlob);
+
+      await fetch(`${API_BASE_URL}/video/process`, {
+        method: "POST",
+        body: formData,
+      });
+    } catch (error) {
+      console.error("Error sending frame to backend:", error);
+    }
+  };
+
   const [detectionState, setDetectionState] = useState({
     face_detected: false,
     blink_count: 0,
@@ -45,12 +62,7 @@ const Dashboard = () => {
       {/* Left Section: Camera Feed */}
       <div className="camera-section">
         <h3>Camera Feed</h3>
-        <img
-          src={`${API_BASE_URL}/video/feed`}
-          width="100%"
-          height="auto"
-          alt="Live Video Feed"
-        />
+        <VideoCapture onFrameSend={sendFrameToBackend} />
       </div>
 
       {/* Middle Section: Graph */}
