@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from routes import timer_blueprint, detection_blueprint, video_blueprint, graph_blueprint
-
+import os
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -13,4 +13,4 @@ app.register_blueprint(video_blueprint, url_prefix='/video')
 app.register_blueprint(graph_blueprint, url_prefix='/graph')
 
 if __name__ == "__main__":
-    app.run(host="localhost", port=5000)
+    app.run(port=os.getenv("PORT", default=5000))
