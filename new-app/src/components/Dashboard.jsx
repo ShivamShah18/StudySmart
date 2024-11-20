@@ -15,7 +15,7 @@ const Dashboard = () => {
 
   const fetchDetectionState = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/detection_state`);
+      const response = await fetch(`${API_BASE_URL}/detection/state`);
       const data = await response.json();
       setDetectionState(data);
     } catch (error) {
@@ -25,7 +25,7 @@ const Dashboard = () => {
 
   const fetchFocusGraph = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/focus-graph`);
+      const response = await fetch(`${API_BASE_URL}/graph/focus`);
       if (!response.ok) throw new Error('Failed to fetch the graph');
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -46,7 +46,7 @@ const Dashboard = () => {
       <div className="camera-section">
         <h3>Camera Feed</h3>
         <img
-          src={`${API_BASE_URL}/video_feed`}
+          src={`${API_BASE_URL}/video/feed`}
           width="100%"
           height="auto"
           alt="Live Video Feed"
@@ -61,9 +61,10 @@ const Dashboard = () => {
         ) : (
           <p>No graph available. Click below to generate.</p>
         )}
-        <button onClick={fetchFocusGraph} className="graph-button">
-          Generate Focus Graph
+        <button style={{ width: "100%" }} onClick={fetchFocusGraph} className="graph-button">
+ Generate Focus Graph
         </button>
+
         <div className="statistics">
           <h4>Session Statistics</h4>
           <p>Focus Level: {detectionState.session_score}%</p>

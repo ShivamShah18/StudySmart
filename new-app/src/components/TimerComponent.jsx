@@ -8,7 +8,7 @@ const TimerComponent = () => {
 
   const fetchTime = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/get_time`);
+      const response = await fetch(`${API_BASE_URL}/timer/time`);
       const data = await response.json();
       setElapsedTime(data.elapsed_time);
     } catch (error) {
@@ -18,7 +18,7 @@ const TimerComponent = () => {
 
   const startTimer = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/start_timer`, { method: 'POST' });
+      const response = await fetch(`${API_BASE_URL}/timer/start`, { method: 'POST' });
       if (response.ok) setRunning(true);
     } catch (error) {
       console.error('Error starting timer:', error);
@@ -27,7 +27,7 @@ const TimerComponent = () => {
 
   const stopTimer = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/stop_timer`, { method: 'POST' });
+      const response = await fetch(`${API_BASE_URL}/timer/stop`, { method: 'POST' });
       if (response.ok) {
         setRunning(false);
         fetchTime();
@@ -38,7 +38,7 @@ const TimerComponent = () => {
   };
 
   const resetTimer = async () => {
-    await fetch(`${API_BASE_URL}/update_variable`, {
+    await fetch(`${API_BASE_URL}/timer/reset`, {
          method: 'POST',
          headers: {
            'Content-Type': 'application/json',
