@@ -1,4 +1,4 @@
-# StudySmart
+# StudySmart: https://studysmartapp.netlify.app/
 
 **StudySmart** is a productivity web application designed to help users manage their tasks, track their focus time, and access a live video feed for enhanced study sessions. It combines task management, real-time monitoring, and focus tracking features to create a streamlined experience for students and professionals aiming to stay productive.
 
