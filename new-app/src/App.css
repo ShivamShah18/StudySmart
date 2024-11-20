@@ -1,32 +1,31 @@
-/* Global styles */
+/* Global Styles */
 .App {
   font-family: 'Tahoma', sans-serif;
   background-color: #f4f7fa;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* Adjusted to push content higher */
+  justify-content: flex-start;
 }
 
+/* Header Styles */
 header {
-  background-color: #003366; /* Dark blue background */
-  padding: 2.0rem 0;
+  background-color: #003366;
+  padding: 1.5rem 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 header h1 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: white;
-  margin: 1;
-  margin-left: 20px;
+  margin: 0 1rem;
 }
 
 header p {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: white;
-  margin-top: 3px;
-  margin-left: 20px;
+  margin: 0.3rem 1rem;
 }
 
 .top-right-buttons {
@@ -34,11 +33,12 @@ header p {
   top: 20px;
   right: 20px;
   display: flex;
-  gap: 15px;
+  gap: 10px;
 }
 
+/* Buttons */
 .nav-button {
-  padding: 12px 20px;
+  padding: 10px 16px;
   background-color: #fff;
   border: 2px solid #005ea6;
   border-radius: 30px;
@@ -65,25 +65,45 @@ header p {
 /* Layout Styling */
 .App-main {
   display: flex;
+  flex-direction: column; /* Stack elements vertically for smaller screens */
   justify-content: center;
-  gap: 50px;
-  padding: 20px;
-}
-
-.layout {
-  display: flex;
   gap: 20px;
-  flex: 1;
-  justify-content: flex-start; /* Adjusted to push components up */
-  align-items: flex-start;
+  padding: 10px;
 }
 
-.camera, .statistics, .task-timer {
-  flex: 1;
+/* Dashboard Sections */
+.dashboard-container {
+  display: flex;
+  flex-direction: column; /* Stack sections for mobile */
+  gap: 20px;
   padding: 15px;
-  background-color: #ffffff;
-  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.camera-section,
+.graph-section,
+.task-timer-section {
+  flex: 1;
+  background: #f8f9fa;
   border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+}
+
+/* Responsive Styles */
+@media (min-width: 768px) {
+  .App-main {
+    flex-direction: row;
+  }
+
+  .dashboard-container {
+    flex-direction: row; /* Side-by-side sections for larger screens */
+  }
+
+  .camera-section,
+  .graph-section,
+  .task-timer-section {
+    flex: 1;
+  }
 }
 
 .camera img {
@@ -92,7 +112,8 @@ header p {
   border-radius: 8px;
 }
 
-.statistics h3, .task-timer h3 {
+.statistics h3,
+.task-timer h3 {
   margin-bottom: 15px;
 }
 
@@ -104,224 +125,62 @@ header p {
   padding: 10px;
   background-color: #f7f8fa;
   margin-bottom: 10px;
+  border-radius: 6px;
 }
 
-.task-list .completed {
-  text-decoration: line-through;
-  color: gray;
-}
-
-.task-list button {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
-}
-
-.task-list button:hover {
-  background-color: #c0392b;
-}
-
-.timer p {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.timer button {
-  background-color: #27ae60;
-  color: white;
-  border: none;
-  padding: 10px;
-  cursor: pointer;
-  margin-right: 5px;
-}
-
-.timer button:hover {
-  background-color: #2ecc71;
-}
-
-.task-timer {
-  margin-top: 20px;
-  padding: 20px;
-  background-color: #f7f7f7;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
+/* Adjustments for mobile screens */
 .task-input {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 10px;
+  flex-direction: column;
 }
 
 .task-input input {
-  padding: 10px;
-  font-size: 16px;
-  width: 75%;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  background-color: #f9f9f9;
-  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 10px;
 }
 
-.task-input input:focus {
-  outline: none;
-  border-color: #4CAF50;
-  background-color: #fff;
-}
-
-/* Adjusted "Add Task" button */
 .add-task-btn {
-  padding: 8px 16px; /* Smaller padding */
-  font-size: 14px; /* Smaller font size */
-  background-color: #005ea6; /* Match header color */
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  width: 100%;
 }
 
-.add-task-btn:hover {
-  background-color: #004b8f; /* Darker shade for hover */
-}
-
-.add-task-btn:focus {
-  outline: none;
-}
-
-/* Ensure all buttons have consistent styles */
 button {
-  background-color: #005ea6; /* Match header color */
-  color: white;
-  border: none;
-  padding: 20px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  width: 31%;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #004b8f; /* Darker shade for hover */
-}
-
-button:focus {
-  outline: none;
-}
-
-/* Task List Styling */
-.task-list {
-  list-style: none;
-  padding: 0;
-  margin-top: 10px;
-}
-
-.task-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  width: 100%;
   padding: 10px;
-  margin: 5px 0;
-  background-color: #fff;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.task-list li:hover {
-  background-color: #f1f1f1;
-}
-
-.task-list li.completed {
-  text-decoration: line-through;
-  color: #bbb;
-}
-
-.delete-btn {
-  background-color: transparent;
-  border: none;
-  color: #e74c3c;
-  cursor: pointer;
   font-size: 14px;
 }
 
-.delete-btn:hover {
-  text-decoration: underline;
-}
-
+/* Timer Buttons */
 .timer-buttons {
-  display: flex;
-  justify-content: space-between;
-  width: '30%';
+  flex-direction: column;
   gap: 10px;
 }
 
-.timer-buttons button {
-  padding: 10px;
-}
-
-.stop-btn {
-  background-color: red;
-}
-
-.reset-btn {
-  background-color: blue;
-}
-
-.dashboard-container {
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
-  padding: 20px;
-}
-
-.camera-section,
-.graph-section,
-.task-timer-section {
-  flex: 1;
-  background: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-}
-
-.camera-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.graph-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.task-timer-section {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+/* Graph Section */
+.graph-section img {
+  width: 100%;
+  height: auto;
 }
 
 .graph-button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  width: 100%;
 }
 
-.graph-button:hover {
-  background-color: #0056b3;
+/* Adjustments for larger screens */
+@media (min-width: 992px) {
+  .App-main {
+    gap: 50px;
+  }
+
+  .dashboard-container {
+    flex-direction: row;
+  }
+
+  .camera-section,
+  .graph-section,
+  .task-timer-section {
+    padding: 20px;
+  }
+
+  .graph-button {
+    max-width: 200px;
+  }
 }
