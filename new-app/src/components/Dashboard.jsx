@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import TimerComponent from './TimerComponent';
 import TaskList from './TaskList';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = 'https://studynew-production.up.railway.app/';
 
 const Dashboard = () => {
   const [detectionState, setDetectionState] = useState({
