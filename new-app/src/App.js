@@ -4,6 +4,7 @@ import Logo from './Logo.png';
 
 const link2 = 'https://studynew.onrender.com:10000'
 const link = 'http://localhost:5000' 
+
 const App = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
@@ -79,7 +80,7 @@ const App = () => {
     } catch (error) {
       console.error('Error stopping timer:', error);
     }
-  };  const [isRunning, setIsRunning] = useState(false);
+  };  
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [detectionState, setDetectionState] = useState({
     face_detected: false,
@@ -90,7 +91,7 @@ const App = () => {
 
   
   const handleStop = async () => {
-      const response = await fetch(link + '/update_variable', {
+   await fetch(link + '/update_variable', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,68 +133,18 @@ const App = () => {
     setTasks(tasks.filter((task, i) => i !== index));
   };
 
+
   const renderContent = () => {
     if (activeTab === "Dashboard") {
       return (
         <div className="dashboard">
           <div className="video-feed">
-            <h2>Study Session Statistics</h2>
-            <div>
-            <div>
-            
-            <div>
-            <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>Focus Graph</h1>
-      <button onClick={fetchFocusGraph}>Get Focus Graph</button>
-      {graphUrl && <img src={graphUrl} alt="Focus Graph" style={{ marginTop: '20px', width: '80%' }} />}
-    </div>
-        </div>
-        </div>
-        </div>
-            <p>Face Detected: {detectionState.face_detected ? "Yes" : "No"}</p>
-            <p>Blinks Detected: {detectionState.blink_count}</p>
-            <p>Hand Left Frame Count: {detectionState.hand_absent_count}</p>
-          </div>
-          <div className="task-section">
-            <div className="task-input">
-              <input
-                type="text"
-                value={newTask}
-                onChange={(e) => setNewTask(e.target.value)}
-                placeholder="Enter a task"
-              />
-              <button onClick={handleAddTask}>Add Task</button>
-            </div>
-            <ul className="task-list">
-              {tasks.map((task, index) => (
-                <li
-                  key={index}
-                  className={task.completed ? 'completed' : ''}
-                  onClick={() => toggleTaskCompletion(index)}
-                >
-                  {task.text}
-                  <button onClick={() => handleDeleteTask(index)}>Delete</button>
-                </li>
-              ))}
-            </ul>
-
-
-           
-            <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>Flask Timer</h1>
-      <p>Elapsed Time: {elapsedTime.toFixed(2)} seconds</p>
-      <button onClick={startTimer} disabled={running}>
-        Start
-      </button>
-      <button onClick={stopTimer} disabled={!running}>
-        Stop
-      </button>
-    </div>
-            <div className="statistics">
-              <h3>Session Statistics</h3>
-              
-              <p>Your focus level: {detectionState.session_score}%</p>
-            </div>
+          <img
+              src= {link + "/video_feed"}
+              width="300"
+              height="200"
+              alt="Live Video Feed"
+            />
           </div>
         </div>
       );
@@ -207,6 +158,9 @@ const App = () => {
             <li>Use the timer to measure study sessions.</li>
             <li>Review statistics on your focus after each session.</li>
           </ul>
+          <p>Face Detected: {detectionState.face_detected ? "Yes" : "No"}</p>
+          <p>Blinks Detected: {detectionState.blink_count}</p>
+          <p>Hand Left Frame Count: {detectionState.hand_absent_count}</p>
         </div>
       );
     }
@@ -214,36 +168,107 @@ const App = () => {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <div className="logo-and-title">
-          <img src={Logo} alt="Logo" className="logo" />
-          <h1>Study Smart</h1>
+      <header className="bg-dark-blue">
+        <div className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+          <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-white sm:text-3xl">Study Smart</h1>
+              <p className="mt-1.5 text-sm text-white">
+                Stay productive with task management, focus tracking, and live video feed.
+              </p>
+            </div>
+            <div className="top-right-buttons">
+              <button
+                className="nav-button"
+                onClick={() => setActiveTab("Dashboard")}
+              >
+                <span className="text-sm font-medium">Dashboard</span>
+              </button>
+
+              <button
+                className="nav-button about-btn"
+                onClick={() => setActiveTab("About")}
+              >
+                About
+              </button>
+            </div>
+          </div>
         </div>
       </header>
-      <nav className="App-nav">
-        <button onClick={() => setActiveTab("Dashboard")}>Dashboard</button>
-        <button onClick={() => setActiveTab("About")}>About</button>
-      </nav>
       <main className="App-main">
         <div className="layout">
+          {/* Left Section: Camera */}
           <div className="camera">
             <h3>Camera</h3>
             <img
               src= {link + "/video_feed"}
-              width="300"
-              height="200"
+              width="500"
+              height="350"
               alt="Live Video Feed"
             />
           </div>
-          <div className="center">
-            <h2>Today's Tasks</h2>
-            {renderContent()}
+
+          {/* Middle Section: Statistics */}
+          <div className="statistics">
+            <h3>Session Statistics</h3>
+            <p>Your focus level: {detectionState.session_score}%</p>
+            <div className="graph">
+            {graphUrl && <img src={graphUrl} alt="Focus Graph" style={{ marginTop: '20px', width: '80%' }} />}
+              <button onClick={fetchFocusGraph}>Get Focus Graph</button>
+            </div>
+            <p>Face Detected: {detectionState.face_detected ? "Yes" : "No"}</p>
+            <p>Blinks Detected: {detectionState.blink_count}</p>
+            <p>Hand Left Frame Count: {detectionState.hand_absent_count}</p>
+          </div>
+
+          {/* Right Section: Task Input and Timer */}
+          <div className="task-timer">
+            {activeTab === "Dashboard" && (
+              <>
+                <h2>Today's Tasks</h2>
+                <div className="task-input">
+                  <input
+                    type="text"
+                    value={newTask}
+                    onChange={(e) => setNewTask(e.target.value)}
+                    placeholder="Enter a task"
+                  />
+                  <button className="add-task-btn" onClick={handleAddTask}>Add Task</button>
+                </div>
+                <ul className="task-list">
+                  {tasks.map((task, index) => (
+                    <li
+                      key={index}
+                      className={task.completed ? 'completed' : ''}
+                      onClick={() => toggleTaskCompletion(index)}
+                    >
+                      {task.text}
+                      <button onClick={() => handleDeleteTask(index)}>Delete</button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {activeTab === "About" && renderContent()}
+
+            <div className="timer">
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+      <h1>Timer</h1>
+      <p>Elapsed Time: {elapsedTime.toFixed(2)} seconds</p>
+      <button onClick={startTimer} disabled={running}>
+        Start
+      </button>
+      <button onClick={stopTimer} disabled={!running}>
+        Stop
+      </button>
+      <button onClick = {handleStop}>Reset</button>
+    </div>
+            </div>
           </div>
         </div>
       </main>
     </div>
   );
 };
-
-export default App;
-
+export default App

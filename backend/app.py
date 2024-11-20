@@ -19,9 +19,9 @@ detection_state = {
     "face_detected": False,
     "blink_count": 0,
     "hand_absent_count": 0,
-    "session_duration": 0,
+    "session_duration": 1,
     "session_score": 0,
-    "sessionScoreList": [100]
+    "sessionScoreList": [100,100]
 
 }
 
@@ -196,8 +196,13 @@ def update_variable():
     detection_state["face_detected"] = False
     detection_state["blink_count"] = 0
     detection_state["hand_absent_count"] = 0
-    detection_state["session_duration"] = 0
+    detection_state["session_duration"] = 2
     detection_state["session_score"] = 0
+    detection_state["sessionScoreList"] = [100,100]
+    timer_data["elapsed_time"] = 0
+    timer_data["running"] = False
+    timer_data["start_time"] = 0
+
     return jsonify({'message': 'Variable updated successfully'})
 
 @app.route('/api/focus-graph', methods=['GET'])

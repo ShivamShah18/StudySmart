@@ -1,196 +1,274 @@
+/* Global styles */
 .App {
-  display: flex;
-  flex-direction: column;
+  font-family: 'Tahoma', sans-serif;
+  background-color: #f4f7fa;
   min-height: 100vh;
-  font-family: Arial, sans-serif;
-  background-color: #f2f2f2;
-}
-
-.App-header {
-  background-color: #04253a;
-  color: white;
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center the logo and title */
-  border-bottom: 3px solid #000000;
+  justify-content: flex-start; /* Adjusted to push content higher */
 }
 
-.App-header .logo-and-title {
-  display: flex;
-  flex-direction: column; /* Stack the logo and title */
-  align-items: center;
-  text-align: center;
+header {
+  background-color: #003366; /* Dark blue background */
+  padding: 2.0rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.App-header .logo {
-  width: 80px; /* Increase the size */
-  height: 80px;
-  border-radius: 50%; /* Make the logo circular */
-  margin-bottom: 10px;
-  border: 3px solid white; /* Optional: add a border for better visibility */
-  object-fit: cover; /* Ensure the logo fits well within the circle */
-}
-
-.App-header h1 {
-  font-size: 1.8rem; /* Adjust font size */
-  margin: 0;
-}
-
-.App-nav {
-  background-color: #fff;
-  padding: 15px;
-  display: flex;
-  justify-content: center;
-  border-bottom: 1px solid #ddd;
-}
-
-.App-nav button {
-  padding: 12px 25px;
-  border: none;
-  background: #3498db;
+header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
   color: white;
-  cursor: pointer;
-  border-radius: 25px;
+  margin: 1;
+  margin-left: 20px;
+}
+
+header p {
   font-size: 1rem;
-  margin: 0 10px;
+  color: white;
+  margin-top: 3px;
+  margin-left: 20px;
 }
 
-.App-nav button:hover {
-  background: #2980b9;
+.top-right-buttons {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 15px;
 }
 
+.nav-button {
+  padding: 12px 20px;
+  background-color: #fff;
+  border: 2px solid #005ea6;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #005ea6;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.nav-button:hover {
+  background-color: #005ea6;
+  color: white;
+}
+
+.nav-button.about-btn {
+  background-color: #4C6B93;
+  color: white;
+}
+
+.nav-button.about-btn:hover {
+  background-color: #3B5374;
+}
+
+/* Layout Styling */
 .App-main {
   display: flex;
-  flex: 1;
   justify-content: center;
-  padding: 30px;
+  gap: 50px;
+  padding: 20px;
 }
 
 .layout {
   display: flex;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 1200px;
+  gap: 20px;
+  flex: 1;
+  justify-content: flex-start; /* Adjusted to push components up */
+  align-items: flex-start;
 }
 
-.camera {
-  width: 30%;
-  padding: 20px;
-  text-align: center;
-  background-color: white;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.camera, .statistics, .task-timer {
+  flex: 1;
+  padding: 15px;
+  background-color: #ffffff;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
 }
 
-.center {
-  width: 65%;
-}
-
-.video {
+.camera img {
   width: 100%;
   height: auto;
   border-radius: 8px;
 }
 
-.task-section {
+.statistics h3, .task-timer h3 {
+  margin-bottom: 15px;
+}
+
+.task-list li {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  height: auto;
+  padding: 10px;
+  background-color: #f7f8fa;
+  margin-bottom: 10px;
+}
+
+.task-list .completed {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.task-list button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.task-list button:hover {
+  background-color: #c0392b;
+}
+
+.timer p {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.timer button {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.timer button:hover {
+  background-color: #2ecc71;
+}
+
+.task-timer {
+  margin-top: 20px;
   padding: 20px;
-  background-color: #f9f9f9;
+  background-color: #f7f7f7;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .task-input {
   display: flex;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 10px;
 }
 
 .task-input input {
-  width: calc(100% - 80px);
   padding: 10px;
-  margin-right: 10px;
-  border-radius: 8px;
+  font-size: 16px;
+  width: 75%;
+  border-radius: 6px;
   border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease;
 }
 
-.task-input button {
-  padding: 10px 20px;
-  background-color: #3498db;
+.task-input input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  background-color: #fff;
+}
+
+/* Adjusted "Add Task" button */
+.add-task-btn {
+  padding: 8px 16px; /* Smaller padding */
+  font-size: 14px; /* Smaller font size */
+  background-color: #005ea6; /* Match header color */
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 1rem;
+  transition: background-color 0.3s ease;
 }
 
+.add-task-btn:hover {
+  background-color: #004b8f; /* Darker shade for hover */
+}
+
+.add-task-btn:focus {
+  outline: none;
+}
+
+/* Ensure all buttons have consistent styles */
+button {
+  background-color: #005ea6; /* Match header color */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #004b8f; /* Darker shade for hover */
+}
+
+button:focus {
+  outline: none;
+}
+
+/* Task List Styling */
 .task-list {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
+  margin-top: 10px;
 }
 
 .task-list li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  background: #eef;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  cursor: pointer;
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.task-list li:hover {
+  background-color: #f1f1f1;
 }
 
 .task-list li.completed {
   text-decoration: line-through;
-  color: #aaa;
+  color: #bbb;
 }
 
-.task-list button {
-  background: #e74c3c;
-  color: white;
+.delete-btn {
+  background-color: transparent;
   border: none;
-  border-radius: 5px;
-  padding: 5px 10px;
+  color: #e74c3c;
   cursor: pointer;
+  font-size: 14px;
 }
 
-.timer {
-  margin-top: 30px;
-  text-align: center;
+.delete-btn:hover {
+  text-decoration: underline;
 }
 
-.timer p {
-  font-size: 2rem;
-  margin: 10px 0;
+.timer-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.statistics {
-  margin-top: 20px;
-  padding: 20px;
-  background: #eee;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.timer-buttons button {
+  padding: 10px;
 }
 
-.statistics h3 {
-  margin-bottom: 10px;
+.stop-btn {
+  background-color: red;
 }
 
-.statistics p {
-  font-size: 1rem;
-}
-
-.about {
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.about ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.about li {
-  margin: 10px 0;
+.reset-btn {
+  background-color: blue;
 }
