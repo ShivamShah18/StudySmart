@@ -12,21 +12,24 @@ header {
   background-color: #003366; /* Dark blue background */
   padding: 2.0rem 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;  /* Centers content horizontally */
+  align-items: center;      /* Centers content vertically */
 }
 
 header h1 {
   font-size: 2.5rem;
   font-weight: 700;
   color: white;
-  margin: 1;
-  margin-left: 20px;
+  margin: 0;
+  padding-left: 20px;
 }
 
 header p {
   font-size: 1rem;
   color: white;
   margin-top: 3px;
-  margin-left: 20px;
+  padding-left: 20px;
 }
 
 .top-right-buttons {
@@ -41,11 +44,13 @@ header p {
   padding: 12px 20px;
   background-color: #fff;
   border: 2px solid #005ea6;
-  border-radius: 30px;
+  border-radius: 50%;  /* Ensures circular shape */
   cursor: pointer;
   font-weight: bold;
   color: #005ea6;
   transition: background-color 0.3s, color 0.3s;
+  white-space: nowrap;  /* Prevents text from overflowing */
+  font-size: 14px;  /* Reduces font size to fit text properly */
 }
 
 .nav-button:hover {
@@ -325,3 +330,109 @@ button:focus {
 .graph-button:hover {
   background-color: #0056b3;
 }
+
+
+/* Nav button styles */
+.top-right-buttons {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 15px;
+}
+
+.nav-button {
+  padding: 12px 24px;  /* Adjusted padding for rectangular shape */
+  background-color: #fff;
+  border: 2px solid #005ea6;
+  border-radius: 8px;  /* Curved edges */
+  cursor: pointer;
+  font-weight: bold;
+  color: #005ea6;
+  transition: background-color 0.3s, color 0.3s;
+  white-space: nowrap;  /* Prevents text overflow */
+  font-size: 16px;  /* Font size for readability */
+}
+
+.nav-button:hover {
+  background-color: #005ea6;
+  color: white;
+}
+
+.nav-button.active {
+  background-color: #005ea6;  /* Active button color */
+  color: white;
+}
+
+.nav-button.about-btn {
+  background-color: #4C6B93;
+  color: white;
+}
+
+.nav-button.about-btn:hover {
+  background-color: #3B5374;
+}
+
+/* Optional: Adding active state styling */
+.nav-button.active {
+  background-color: #005ea6;  /* Active state */
+  color: white;
+}
+
+.nav-button.active:hover {
+  background-color: #003f6b; /* Darker shade when active */
+}
+
+/* Container for the navigation buttons */
+.top-right-buttons {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 15px;
+}
+
+/* Styling for individual navigation buttons */
+.nav-button {
+  display: flex;          /* Make the button a flex container */
+  align-items: center;    /* Center text vertically */
+  justify-content: center; /* Center text horizontally */
+  padding: 12px 24px;      /* Padding for rectangular shape */
+  background-color: #fff;
+  border: 2px solid #005ea6;
+  border-radius: 8px;      /* Rounded corners */
+  cursor: pointer;
+  font-weight: bold;
+  color: #005ea6;
+  transition: background-color 0.3s, color 0.3s;
+  white-space: nowrap;     /* Prevent text overflow */
+  font-size: 16px;         /* Font size for readability */
+  text-align: center;      /* Ensure text is aligned properly */
+}
+
+.nav-button:hover {
+  background-color: #005ea6;
+  color: white;
+}
+
+/* Styling for the active state of the button */
+.nav-button.active {
+  background-color: #005ea6;
+  color: white;
+}
+
+/* Optional: Styling for "About" button variant */
+.nav-button.about-btn {
+  background-color: #4C6B93;
+  color: white;
+}
+
+.nav-button.about-btn:hover {
+  background-color: #3B5374;
+}
+
+/* Active button hover effect */
+.nav-button.active:hover {
+  background-color: #003f6b; /* Darker shade when active */
+}
+

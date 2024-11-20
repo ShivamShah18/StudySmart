@@ -7,7 +7,7 @@ const Navigation = ({ activeTab, setActiveTab }) => {
         className={`nav-button ${activeTab === 'Dashboard' ? 'active' : ''}`}
         onClick={() => setActiveTab('Dashboard')}
       >
-        Dashboard
+        Home
       </button>
       <button
         className={`nav-button ${activeTab === 'About' ? 'active' : ''}`}
@@ -18,5 +18,6 @@ const Navigation = ({ activeTab, setActiveTab }) => {
     </div>
   );
 };
+
 
 export default Navigation;

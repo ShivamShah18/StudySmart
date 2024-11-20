@@ -23,7 +23,7 @@ const App = () => {
             <div>
               <h1 className="text-2xl font-bold text-white sm:text-3xl">Study Smart</h1>
               <p className="mt-1.5 text-sm text-white">
-                Stay productive with task management, focus tracking, and live video feed.
+                Stay productive with task management, focus tracking, and a live video feed.
               </p>
             </div>
             <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
