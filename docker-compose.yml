@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: studysmart-backend
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: development
+      FLASK_DEBUG: "True"
+      FLASK_APP: app.py
+      CORS_ORIGINS: "http://localhost:3000"
+      LOG_LEVEL: INFO
+    volumes:
+      - ./backend:/app
+    command: python app.py
+    networks:
+      - studysmart-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend service (for development)
+  frontend:
+    container_name: studysmart-frontend
+    build:
+      context: ./new-app
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_BASE_URL: http://backend:5000
+      REACT_APP_ENV: development
+    volumes:
+      - ./new-app/src:/app/src
+      - ./new-app/public:/app/public
+    depends_on:
+      - backend
+    networks:
+      - studysmart-network
+    stdin_open: true
+    tty: true
+
+networks:
+  studysmart-network:
+    driver: bridge
+
+volumes:
+  backend-data:

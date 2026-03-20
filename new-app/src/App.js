@@ -8,10 +8,13 @@ const App = () => {
   const [activeTab, setActiveTab] = useState('Dashboard');
 
   const renderContent = () => {
-    if (activeTab === 'Dashboard') {
-      return <Dashboard />;
-    } else if (activeTab === 'About') {
-      return <About />;
+    switch (activeTab) {
+      case 'Dashboard':
+        return <Dashboard />;
+      case 'About':
+        return <About />;
+      default:
+        return <Dashboard />;
     }
   };
 
@@ -24,7 +27,9 @@ const App = () => {
           </div>
         </div>
       </header>
-      <main className="App-main">{renderContent()}</main>
+      <main className="App-main">
+        {renderContent()}
+      </main>
     </div>
   );
 };

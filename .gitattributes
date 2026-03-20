@@ -1,1 +1,33 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# Source files
+*.py text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.exe binary
+*.dat binary
+*.model binary
+
+# Special handling for git-related files
+.gitattributes text eol=lf
+.gitignore text eol=lf
+
+# Large file handling
 new-app/Postman-win64-Setup.exe filter=lfs diff=lfs merge=lfs -text
+
