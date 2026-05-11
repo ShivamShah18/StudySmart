@@ -1,6 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 const VideoCapture = ({ onFrameSend }) => {
   const videoRef    = useRef(null);
@@ -12,6 +10,9 @@ const VideoCapture = ({ onFrameSend }) => {
 
   /* ── Start camera ─────────────────────────────────────────── */
   useEffect(() => {
+    // Capture ref to local var so cleanup doesn't use stale .current
+    const video = videoRef.current;
+
     const startVideo = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -30,9 +31,9 @@ const VideoCapture = ({ onFrameSend }) => {
         };
       } catch (err) {
         const msgs = {
-          NotAllowedError: 'Camera access denied — please allow camera permissions.',
-          NotFoundError:   'No camera detected — please connect a camera.',
-          NotReadableError:'Camera is in use by another application.',
+          NotAllowedError:  'Camera access denied — please allow camera permissions.',
+          NotFoundError:    'No camera detected — please connect a camera.',
+          NotReadableError: 'Camera is in use by another application.',
         };
         setError(msgs[err.name] || 'Unable to access camera.');
         setCameraActive(false);
@@ -42,19 +43,19 @@ const VideoCapture = ({ onFrameSend }) => {
     startVideo();
 
     return () => {
-      if (videoRef.current?.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach(t => t.stop());
+      if (video && video.srcObject) {
+        video.srcObject.getTracks().forEach(t => t.stop());
       }
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
 
-  /* ── Frame capture loop ───────────────────────────────────── */
-  const captureFrame = () => {
+  /* ── Frame capture — stable ref via useCallback ─────────────── */
+  const captureFrame = useCallback(() => {
     if (!videoRef.current || !canvasRef.current || !cameraActive) return;
     try {
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
+      const ctx    = canvas.getContext('2d');
       canvas.width  = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
       ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
@@ -62,13 +63,13 @@ const VideoCapture = ({ onFrameSend }) => {
     } catch (e) {
       console.error('Frame capture error:', e);
     }
-  };
+  }, [cameraActive, onFrameSend]);
 
   useEffect(() => {
     if (!cameraActive) return;
     intervalRef.current = setInterval(captureFrame, 200);
     return () => clearInterval(intervalRef.current);
-  }, [cameraActive, onFrameSend]);
+  }, [cameraActive, captureFrame]);
 
   /* ── Render ───────────────────────────────────────────────── */
   return (
@@ -96,7 +97,6 @@ const VideoCapture = ({ onFrameSend }) => {
             <span>No feed available</span>
           </div>
         )}
-        {/* Corner brackets overlay */}
         <div className="camera-overlay" />
       </div>
 
