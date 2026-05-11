@@ -8,28 +8,27 @@ const TimerComponent = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  /* ── Helpers ──────────────────────────────────────────────── */
   const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${secs}s`;
-    }
-    return `${minutes}m ${secs}s`;
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const mm = String(m).padStart(2, '0');
+    const ss = String(s).padStart(2, '0');
+    if (h > 0) return `${h}:${mm}:${ss}`;
+    return `${mm}:${ss}`;
   };
 
+  /* ── API calls ────────────────────────────────────────────── */
   const fetchTime = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/timer/time`);
-      if (!response.ok) throw new Error('Failed to fetch time');
-      
-      const data = await response.json();
+      const res = await fetch(`${API_BASE_URL}/timer/time`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
       setElapsedTime(data.elapsed_time || 0);
       setError('');
-    } catch (err) {
-      console.error('Error fetching time:', err);
-      setError('Unable to connect to backend');
+    } catch {
+      setError('Cannot reach backend');
     }
   };
 
@@ -37,18 +36,15 @@ const TimerComponent = () => {
     try {
       setLoading(true);
       setError('');
-      const response = await fetch(`${API_BASE_URL}/timer/start`, { 
+      const res = await fetch(`${API_BASE_URL}/timer/start`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
-      
-      if (!response.ok) throw new Error('Failed to start timer');
-      
-      const data = await response.json();
+      if (!res.ok) throw new Error();
+      const data = await res.json();
       setRunning(true);
       setElapsedTime(data.elapsed_time || 0);
-    } catch (err) {
-      console.error('Error starting timer:', err);
+    } catch {
       setError('Failed to start timer');
     } finally {
       setLoading(false);
@@ -59,19 +55,16 @@ const TimerComponent = () => {
     try {
       setLoading(true);
       setError('');
-      const response = await fetch(`${API_BASE_URL}/timer/stop`, { 
+      const res = await fetch(`${API_BASE_URL}/timer/stop`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
-      
-      if (!response.ok) throw new Error('Failed to stop timer');
-      
-      const data = await response.json();
+      if (!res.ok) throw new Error();
+      const data = await res.json();
       setRunning(false);
       setElapsedTime(data.elapsed_time || 0);
-    } catch (err) {
-      console.error('Error stopping timer:', err);
-      setError('Failed to stop timer');
+    } catch {
+      setError('Failed to pause timer');
     } finally {
       setLoading(false);
     }
@@ -81,72 +74,69 @@ const TimerComponent = () => {
     try {
       setLoading(true);
       setError('');
-      const response = await fetch(`${API_BASE_URL}/timer/reset`, {
+      const res = await fetch(`${API_BASE_URL}/timer/reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isRunning: false })
+        body: JSON.stringify({ isRunning: false }),
       });
-      
-      if (!response.ok) throw new Error('Failed to reset timer');
-      
+      if (!res.ok) throw new Error();
       setRunning(false);
       setElapsedTime(0);
-    } catch (err) {
-      console.error('Error resetting timer:', err);
+    } catch {
       setError('Failed to reset timer');
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch time every second when running
-  useEffect(() => {
-    if (running) {
-      const interval = setInterval(fetchTime, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [running]);
-
-  // Initial fetch
+  /* ── Effects ──────────────────────────────────────────────── */
   useEffect(() => {
     fetchTime();
   }, []);
 
+  useEffect(() => {
+    if (!running) return;
+    const interval = setInterval(fetchTime, 1000);
+    return () => clearInterval(interval);
+  }, [running]);
+
+  /* ── Render ───────────────────────────────────────────────── */
   return (
-    <div className="timer">
-      <h1>⏱️ Focus Timer</h1>
-      
-      {error && <div style={{ color: '#e74c3c', marginBottom: '10px', fontSize: '14px' }}>{error}</div>}
-      
-      <div style={{ fontSize: '2em', fontWeight: 'bold', margin: '20px 0', minHeight: '50px' }}>
-        {formatTime(elapsedTime)}
+    <div>
+      <div className="card-label">Focus Timer</div>
+
+      {error && <div className="error-banner">⚠&nbsp; {error}</div>}
+
+      <div className="timer-display">
+        <div className="timer">{formatTime(elapsedTime)}</div>
+        <div className={`timer-phase ${running ? 'running' : 'ready'}`}>
+          {running ? '● Session Active' : '○ Ready to Start'}
+        </div>
       </div>
-      
+
       <div className="timer-buttons">
-        <button 
-          onClick={startTimer} 
+        <button
+          className="btn btn-primary"
+          onClick={startTimer}
           disabled={running || loading}
-          style={{ opacity: running || loading ? 0.6 : 1 }}
         >
           Start
         </button>
-        <button 
-          onClick={stopTimer} 
+        <button
+          className="btn btn-ghost"
+          onClick={stopTimer}
           disabled={!running || loading}
-          style={{ opacity: !running || loading ? 0.6 : 1 }}
         >
-          Stop
+          Pause
         </button>
-        <button 
-          onClick={resetTimer} 
+        <button
+          className="btn btn-danger"
+          onClick={resetTimer}
           disabled={loading}
-          style={{ opacity: loading ? 0.6 : 1 }}
         >
           Reset
         </button>
       </div>
-      
-      {loading && <p style={{ fontSize: '12px', color: '#999', marginTop: '10px' }}>Loading...</p>}
     </div>
   );
 };

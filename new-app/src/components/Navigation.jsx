@@ -1,26 +1,36 @@
 import React from 'react';
 
 const Navigation = ({ activeTab, setActiveTab }) => {
+  const tabs = ['Dashboard', 'About'];
+
   return (
     <header className="navigation-header">
-      <div className="header-content">
-        <img src="Logo.png" alt="Logo" className="logo" />
-        <h1 className="header-text">StudySmart</h1>
+      {/* Wordmark */}
+      <div className="header-wordmark">
+        <div className="wordmark-icon">S</div>
+        <span className="header-wordmark-text wordmark-text">
+          Study<span>Smart</span>
+        </span>
       </div>
-      <div className="top-right-buttons">
-        <button
-          className={`nav-button ${activeTab === 'Dashboard' ? 'active' : ''}`}
-          onClick={() => setActiveTab('Dashboard')}
-        >
-          Home
-        </button>
-        <button
-          className={`nav-button ${activeTab === 'About' ? 'active' : ''}`}
-          onClick={() => setActiveTab('About')}
-        >
-          About
-        </button>
+
+      {/* Live session indicator */}
+      <div className="session-status">
+        <span className="status-dot" />
+        System Ready
       </div>
+
+      {/* Nav tabs */}
+      <nav className="nav-buttons-group">
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            className={`nav-button${activeTab === tab ? ' active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
+      </nav>
     </header>
   );
 };

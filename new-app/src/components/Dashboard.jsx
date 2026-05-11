@@ -1,10 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import TimerComponent from './TimerComponent';
 import TaskList from './TaskList';
-import VideoCapture from "./VideoCapture";
+import VideoCapture from './VideoCapture';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
+/* ── Inline SVG Focus Ring ──────────────────────────────────── */
+const FocusRing = ({ score }) => {
+  const radius = 32;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (Math.min(100, Math.max(0, score)) / 100) * circumference;
+
+  return (
+    <div className="focus-ring">
+      <svg viewBox="0 0 80 80" width="80" height="80">
+        <circle
+          className="ring-bg"
+          cx="40" cy="40" r={radius}
+        />
+        <circle
+          className="ring-progress"
+          cx="40" cy="40" r={radius}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <div className="ring-label">
+        <span className="ring-value">{score}</span>
+        <span className="ring-unit">score</span>
+      </div>
+    </div>
+  );
+};
+
+/* ── Dashboard ──────────────────────────────────────────────── */
 const Dashboard = () => {
   const [detectionState, setDetectionState] = useState({
     face_detected: false,
@@ -14,145 +43,134 @@ const Dashboard = () => {
   });
   const [graphUrl, setGraphUrl] = useState(null);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [graphLoading, setGraphLoading] = useState(false);
 
   const sendFrameToBackend = async (frameBlob) => {
     try {
       const formData = new FormData();
-      formData.append("frame", frameBlob);
-
-      const response = await fetch(`${API_BASE_URL}/video/process`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        console.error("Frame processing failed:", response.status);
-      }
-    } catch (error) {
-      console.error("Error sending frame to backend:", error);
+      formData.append('frame', frameBlob);
+      await fetch(`${API_BASE_URL}/video/process`, { method: 'POST', body: formData });
+    } catch (e) {
+      // silently fail — frame drops are acceptable
     }
   };
 
   const fetchDetectionState = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/detection/state`);
-      if (!response.ok) throw new Error('Failed to fetch detection state');
-      
-      const data = await response.json();
+      const res = await fetch(`${API_BASE_URL}/detection/state`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
       setDetectionState(data);
       setError('');
-    } catch (error) {
-      console.error('Error fetching detection state:', error);
-      setError('Unable to fetch detection data');
+    } catch {
+      setError('Cannot reach backend — analytics unavailable');
     }
   };
 
   const fetchFocusGraph = async () => {
     try {
-      setLoading(true);
+      setGraphLoading(true);
       setError('');
-      const response = await fetch(`${API_BASE_URL}/graph/focus`);
-      
-      if (!response.ok) throw new Error('Failed to fetch the graph');
-      
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      setGraphUrl(url);
-    } catch (error) {
-      console.error('Error fetching graph:', error);
+      const res = await fetch(`${API_BASE_URL}/graph/focus`);
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      setGraphUrl(URL.createObjectURL(blob));
+    } catch {
       setError('Failed to generate focus graph');
     } finally {
-      setLoading(false);
+      setGraphLoading(false);
     }
   };
 
-  // Poll detection state every 2 seconds
   useEffect(() => {
+    fetchDetectionState();
     const interval = setInterval(fetchDetectionState, 2000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="dashboard-container">
-      {/* Left Section: Camera Feed */}
-      <div className="camera-section">
-        <h3>📹 Camera Feed</h3>
+
+      {/* ── Column 1: Camera Feed ─────────────────────────── */}
+      <div className="camera-section card">
+        <div className="card-label">Live Feed</div>
         <VideoCapture onFrameSend={sendFrameToBackend} />
       </div>
 
-      {/* Middle Section: Graph */}
-      <div className="graph-section">
-        <h3>📊 Focus Analytics</h3>
-        
-        {error && (
-          <div style={{
-            padding: '10px',
-            backgroundColor: '#fee',
-            color: '#c33',
-            borderRadius: '4px',
-            marginBottom: '10px',
-            fontSize: '12px'
-          }}>
-            ⚠️ {error}
-          </div>
-        )}
-        
-        {graphUrl ? (
-          <img 
-            src={graphUrl} 
-            alt="Focus Graph" 
-            style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
-          />
-        ) : (
-          <div style={{
-            backgroundColor: '#f5f5f5',
-            padding: '40px',
-            textAlign: 'center',
-            borderRadius: '4px',
-            color: '#999'
-          }}>
-            <p>No graph available. Start a session to generate data.</p>
-          </div>
-        )}
-        
-        <button 
-          style={{ width: "100%", marginTop: '10px' }} 
-          onClick={fetchFocusGraph} 
-          className="graph-button"
-          disabled={loading}
-        >
-          {loading ? 'Generating...' : 'Generate Focus Graph'}
-        </button>
+      {/* ── Column 2 Top: Focus Graph ─────────────────────── */}
+      <div className="graph-section card">
+        <div className="card-label">Focus Analytics</div>
 
-        <div className="statistics">
-          <h4>📈 Session Statistics</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <div className="stat-item">
-              <span className="stat-label">Focus Level:</span>
-              <span className="stat-value">{detectionState.session_score}%</span>
+        {error && <div className="error-banner">⚠&nbsp; {error}</div>}
+
+        {graphUrl ? (
+          <img src={graphUrl} alt="Focus Graph" className="graph-image" />
+        ) : (
+          <div className="empty-state">
+            No graph yet.<br />
+            Start a session, then generate.
+          </div>
+        )}
+
+        <button
+          className="graph-button"
+          onClick={fetchFocusGraph}
+          disabled={graphLoading}
+          style={{ marginTop: 'var(--space-3)', width: '100%' }}
+        >
+          {graphLoading ? 'Generating...' : 'Generate Focus Graph'}
+        </button>
+      </div>
+
+      {/* ── Column 2 Bottom: Session Stats ───────────────── */}
+      <div className="analytics-row card">
+        <div className="card-label">Session Statistics</div>
+
+        <div className="focus-score-container">
+          <FocusRing score={detectionState.session_score} />
+          <div className="focus-score-meta">
+            <div className="score-title">
+              {detectionState.session_score >= 75
+                ? 'Deep Focus'
+                : detectionState.session_score >= 40
+                ? 'Moderate Focus'
+                : 'Low Focus'}
             </div>
-            <div className="stat-item">
-              <span className="stat-label">Face Detected:</span>
-              <span className="stat-value">{detectionState.face_detected ? '✓ Yes' : '✗ No'}</span>
+            <div className="score-subtitle">Current session rating</div>
+          </div>
+        </div>
+
+        <div className="stat-grid">
+          <div className="stat-chip">
+            <div className="stat-value">
+              <span className={detectionState.face_detected ? 'detected-yes' : 'detected-no'}>
+                {detectionState.face_detected ? '✓' : '✗'}
+              </span>
             </div>
-            <div className="stat-item">
-              <span className="stat-label">Blinks:</span>
-              <span className="stat-value">{detectionState.blink_count}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">Hand Left Frame:</span>
-              <span className="stat-value">{detectionState.hand_absent_count}</span>
-            </div>
+            <div className="stat-label">Face Detected</div>
+          </div>
+          <div className="stat-chip">
+            <div className="stat-value">{detectionState.blink_count}</div>
+            <div className="stat-label">Blink Count</div>
+          </div>
+          <div className="stat-chip">
+            <div className="stat-value">{detectionState.hand_absent_count}</div>
+            <div className="stat-label">Hands Off Desk</div>
+          </div>
+          <div className="stat-chip">
+            <div className="stat-value">{detectionState.session_score}%</div>
+            <div className="stat-label">Focus Score</div>
           </div>
         </div>
       </div>
 
-      {/* Right Section: Tasks and Timer */}
-      <div className="task-timer-section">
+      {/* ── Column 3: Tasks + Timer ──────────────────────── */}
+      <div className="task-timer-section card">
         <TaskList />
+        <div className="section-divider" />
         <TimerComponent />
       </div>
+
     </div>
   );
 };

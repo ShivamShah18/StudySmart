@@ -1,146 +1,144 @@
 import React, { useState, useEffect } from 'react';
 
-const TaskList = () => {
-  const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState('');
-  const [error, setError] = useState('');
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
-  // Load tasks from localStorage on component mount
-  useEffect(() => {
+const TimerComponent = () => {
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  /* ── Helpers ──────────────────────────────────────────────── */
+  const formatTime = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const mm = String(m).padStart(2, '0');
+    const ss = String(s).padStart(2, '0');
+    if (h > 0) return `${h}:${mm}:${ss}`;
+    return `${mm}:${ss}`;
+  };
+
+  /* ── API calls ────────────────────────────────────────────── */
+  const fetchTime = async () => {
     try {
-      const savedTasks = localStorage.getItem('studysmart_tasks');
-      if (savedTasks) {
-        setTasks(JSON.parse(savedTasks));
-      }
-    } catch (err) {
-      console.error('Error loading tasks from localStorage:', err);
-      setError('Failed to load tasks');
+      const res = await fetch(`${API_BASE_URL}/timer/time`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setElapsedTime(data.elapsed_time || 0);
+      setError('');
+    } catch {
+      setError('Cannot reach backend');
     }
+  };
+
+  const startTimer = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const res = await fetch(`${API_BASE_URL}/timer/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setRunning(true);
+      setElapsedTime(data.elapsed_time || 0);
+    } catch {
+      setError('Failed to start timer');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const stopTimer = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const res = await fetch(`${API_BASE_URL}/timer/stop`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setRunning(false);
+      setElapsedTime(data.elapsed_time || 0);
+    } catch {
+      setError('Failed to pause timer');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetTimer = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const res = await fetch(`${API_BASE_URL}/timer/reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isRunning: false }),
+      });
+      if (!res.ok) throw new Error();
+      setRunning(false);
+      setElapsedTime(0);
+    } catch {
+      setError('Failed to reset timer');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ── Effects ──────────────────────────────────────────────── */
+  useEffect(() => {
+    fetchTime();
   }, []);
 
-  // Save tasks to localStorage whenever they change
   useEffect(() => {
-    try {
-      localStorage.setItem('studysmart_tasks', JSON.stringify(tasks));
-      setError('');
-    } catch (err) {
-      console.error('Error saving tasks to localStorage:', err);
-      setError('Failed to save tasks');
-    }
-  }, [tasks]);
+    if (!running) return;
+    const interval = setInterval(fetchTime, 1000);
+    return () => clearInterval(interval);
+  }, [running]);
 
-  const handleAddTask = () => {
-    // Validate input
-    if (!newTask.trim()) {
-      setError('Task cannot be empty');
-      return;
-    }
-
-    if (newTask.trim().length < 1) {
-      setError('Task must be at least 1 character long');
-      return;
-    }
-
-    if (newTask.trim().length > 500) {
-      setError('Task cannot be longer than 500 characters');
-      return;
-    }
-
-    // Add task
-    const task = {
-      id: Date.now(),
-      text: newTask.trim(),
-      completed: false,
-      createdAt: new Date().toISOString()
-    };
-
-    setTasks([...tasks, task]);
-    setNewTask('');
-    setError('');
-  };
-
-  const toggleTaskCompletion = (id) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  const handleDeleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleAddTask();
-    }
-  };
-
-  const completedCount = tasks.filter(t => t.completed).length;
-
+  /* ── Render ───────────────────────────────────────────────── */
   return (
-    <div className="task-list-container">
-      <h2>Today's Tasks {tasks.length > 0 && `(${completedCount}/${tasks.length})`}</h2>
-      
-      {error && <div className="error-message" style={{ color: '#e74c3c', marginBottom: '10px' }}>{error}</div>}
-      
-      <div className="task-input">
-        <input
-          type="text"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Enter a new task..."
-          maxLength={500}
-          aria-label="New task input"
-        />
-        <button className="add-task-btn" onClick={handleAddTask} aria-label="Add task">
-          Add Task
-        </button>
+    <div>
+      <div className="card-label">Focus Timer</div>
+
+      {error && <div className="error-banner">⚠&nbsp; {error}</div>}
+
+      <div className="timer-display">
+        <div className="timer">{formatTime(elapsedTime)}</div>
+        <div className={`timer-phase ${running ? 'running' : 'ready'}`}>
+          {running ? '● Session Active' : '○ Ready to Start'}
+        </div>
       </div>
 
-      {tasks.length === 0 ? (
-        <p style={{ textAlign: 'center', color: '#999' }}>No tasks yet. Add one to get started!</p>
-      ) : (
-        <ul className="task-list">
-          {tasks.map((task) => (
-            <li
-              key={task.id}
-              className={task.completed ? 'completed' : ''}
-              onClick={() => toggleTaskCompletion(task.id)}
-              style={{ cursor: 'pointer' }}
-              role="button"
-              tabIndex={0}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') toggleTaskCompletion(task.id);
-              }}
-            >
-              <span>
-                <input
-                  type="checkbox"
-                  checked={task.completed}
-                  onChange={() => toggleTaskCompletion(task.id)}
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label={`Mark "${task.text}" as ${task.completed ? 'incomplete' : 'complete'}`}
-                />
-                {task.text}
-              </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteTask(task.id);
-                }}
-                aria-label={`Delete task "${task.text}"`}
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="timer-buttons">
+        <button
+          className="btn btn-primary"
+          onClick={startTimer}
+          disabled={running || loading}
+        >
+          Start
+        </button>
+        <button
+          className="btn btn-ghost"
+          onClick={stopTimer}
+          disabled={!running || loading}
+        >
+          Pause
+        </button>
+        <button
+          className="btn btn-danger"
+          onClick={resetTimer}
+          disabled={loading}
+        >
+          Reset
+        </button>
+      </div>
     </div>
   );
 };
 
-export default TaskList;
+export default TimerComponent;
